@@ -43,16 +43,16 @@ To recompile and start the server:
 npm start
 ```
 
-to start debugging:
+To start debugging:
 ```
 npm run dev
 ```
 
 ### Use API
 
-You can use tools like (Postman)[https://www.postman.com/], (Insomnia)[https://insomnia.rest/] or your internet browser (only for GET method)
+You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) or your internet browser (only for GET method)
 
   * Get informations with the zip code (e.g. 1090):
   ```
-  GET http://localhost:3000/getInfo/byZipCode/1090
+  GET http://localhost:3002/getInfo/byZipCode/1090
   ```

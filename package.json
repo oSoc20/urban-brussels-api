@@ -14,18 +14,19 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^14.0.18",
+    "@types/node": "^14.0.19",
     "@typescript-eslint/eslint-plugin": "^3.6.0",
     "@typescript-eslint/parser": "^3.6.0",
     "eslint": "^7.4.0",
-    "typescript": "^3.9.6"
+    "typescript": "^3.9.6",
+    "ts-node-dev": "^1.0.0-pre.50"
   },
   "dependencies": {
     "@types/express": "^4.17.7",
     "@types/geojson": "^7946.0.7",
     "axios": "^0.19.2",
+    "dotenv": "^8.2.0",
     "esm": "^3.2.25",
-    "express": "^4.17.1",
-    "ts-node-dev": "^1.0.0-pre.50"
+    "express": "^4.17.1"
   }
 }

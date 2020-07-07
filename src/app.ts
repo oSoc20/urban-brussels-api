@@ -1,10 +1,14 @@
+import dotenv from 'dotenv'
 import express from 'express'
 import getInfo from './controllers/getInfo'
 
-const app: express.Application = express();
+dotenv.config()
+
+const app = express()
+const port = process.env['SERVER_PORT'] || 3002
 
 app.use('/getInfo', getInfo)
 
-app.listen(3000, function () {
-  console.log('Server listening on port 3000!');
+app.listen(port, function () {
+  console.log(`Server listening on port ${ port }!🚀`)
 });
