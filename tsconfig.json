@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "outDir": "./build",
+    "outDir": "./functions",
     "strict": true,
     "jsx": "preserve",
     "importHelpers": true,

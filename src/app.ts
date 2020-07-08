@@ -8,7 +8,7 @@ import getInfo from './controllers/getInfo'
 dotenv.config()
 
 const app = express()
-// const port = process.env['SERVER_PORT'] || 3002
+// lesconst port = process.env['SERVER_PORT'] || 3002
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
