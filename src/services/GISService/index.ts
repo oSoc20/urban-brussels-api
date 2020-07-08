@@ -1,10 +1,6 @@
 import Service from '../Service'
 import { GISResult, IrismonumentProperties } from './types/Irismonument'
 import { Params } from './types/Params'
-import { type } from 'os'
-import { stringify } from 'querystring'
-import { AxiosResponse } from 'axios'
-import { captureRejectionSymbol } from 'events'
 
 const URL_BASE = 'https://gis.urban.brussels/geoserver/ows'
 
@@ -61,16 +57,16 @@ class GISSerice extends Service {
     }
 
     build (strict = true): string {
-      let tmp = new Array<string>()
+      const tmp = new Array<string>()
       for (const [key, value] of Object.entries(this.params)) {
         if (typeof value === 'string') {
           tmp.push(`${ key }=${ escape(value) }`)
         } else {
-          // cql_filter=CITY = '1090' and NUMBER = '69'
           const props = Object.entries(value)
           const conds = props.map(([key, value]): string => {
             return value ? `${ key } = '${ escape(this.addslashes('' + value)) }'` : ''
           }).filter(s => s !== '')
+
           tmp.push(
             `${ key }=${ conds.join(strict ? ' and ' : ' or ') }`
           )
@@ -81,13 +77,12 @@ class GISSerice extends Service {
 
     addslashes(str: string): string {
       return str.replace(/\\/g, '\\\\').
-        replace(/\u0008/g, '\\b').
         replace(/\t/g, '\\t').
         replace(/\n/g, '\\n').
         replace(/\f/g, '\\f').
         replace(/\r/g, '\\r').
         replace(/'/g, '\\\'').
-        replace(/"/g, '\\"');
+        replace(/"/g, '\\"')
     }
   }
 
@@ -118,6 +113,7 @@ class GISSerice extends Service {
     return new Promise<GISResult>((resolve, reject) => {
       const params = new GISSerice.ParamsBuilder()
       params.setCQLFilter(filters)
+      console.log(params.build(strict))
       this.axios.get<GISResult>(params.build(strict))
         .then(({ data }) => {
           data.features = data.features.map(f => {
