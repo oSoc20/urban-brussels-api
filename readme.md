@@ -56,3 +56,13 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   ```
   GET http://localhost:3002/getInfo/byZipCode/1090
   ```
+
+  * Get informations with a filter (same zip code)
+  ```
+  POST http://localhost:3002/getInfo/byFilters
+  ```
+  ```
+  {
+	  "CITY": "1090"
+  }
+  ```
