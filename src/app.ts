@@ -1,3 +1,4 @@
+import serverless from 'serverless-http'
 import dotenv from 'dotenv'
 import express from 'express'
 import getInfo from './controllers/getInfo'
@@ -14,3 +15,5 @@ app.use('/getInfo', getInfo)
 app.listen(port, function () {
   console.log(`Server listening on port ${ port }!🚀`)
 });
+
+module.exports.handler = serverless(app)
