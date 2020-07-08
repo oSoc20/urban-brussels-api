@@ -7,6 +7,8 @@ dotenv.config()
 const app = express()
 const port = process.env['SERVER_PORT'] || 3002
 
+app.use(express.json())
+
 app.use('/getInfo', getInfo)
 
 app.listen(port, function () {
