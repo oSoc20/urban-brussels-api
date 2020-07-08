@@ -1,10 +1,7 @@
 [build]
-
-# This command builds the site
-command = "npm run tsc"
-
-# This is the directory that will be deployed
-publish = "build"
-
-# This is where our functions are located
-functions = "build"
+  # This will be run the site build
+  command = "npm run build"
+  # This is the directory is publishing to netlify's CDN
+  publish = "build"
+  # functions build directory
+  functions = "functions-build"
