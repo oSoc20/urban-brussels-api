@@ -1,5 +1,5 @@
 import Service from '../Service'
-import { GISResult, IrismonumentProperties } from './types/Irismonument'
+import { GISResult, IrismonumentProperties, Statistics } from './types/Irismonument'
 import { Params } from './types/Params'
 
 const URL_BASE = 'https://gis.urban.brussels/geoserver/ows'
@@ -14,7 +14,7 @@ class GISSerice extends Service {
         service: 'wfs',
         version: '2.0.0',
         request: 'GetFeature',
-        TypeName: 'BDU_DMS_PROT:Inventaire_Irismonument',
+        TypeName: 'BSO_DML_BESC:Inventaris_Irismonument', // 'BDU_DMS_PROT:Inventaire_Irismonument',
         outputformat: 'application/json',
         cql_filter: {},
         srsname: 'EPSG:4326'
@@ -67,6 +67,11 @@ class GISSerice extends Service {
             return value ? `${ key } = '${ escape(this.addslashes('' + value)) }'` : ''
           }).filter(s => s !== '')
 
+          if (props.length === 0)
+          {
+            continue;
+          }
+
           tmp.push(
             `${ key }=${ conds.join(strict ? ' and ' : ' or ') }`
           )
@@ -105,7 +110,9 @@ class GISSerice extends Service {
           })
           resolve(data as GISResult)
         })
-        .catch((e: unknown) => reject(e))
+        .catch((e: unknown) => {
+          reject(e)
+        })
     })
   }
 
@@ -113,7 +120,7 @@ class GISSerice extends Service {
     return new Promise<GISResult>((resolve, reject) => {
       const params = new GISSerice.ParamsBuilder()
       params.setCQLFilter(filters)
-      console.log(params.build(strict))
+      // console.log(params.build(strict))
       this.axios.get<GISResult>(params.build(strict))
         .then(({ data }) => {
           data.features = data.features.map(f => {
@@ -123,6 +130,35 @@ class GISSerice extends Service {
             return f
           })
           resolve(data as GISResult)
+        })
+        .catch((e: unknown) => reject(e))
+    })
+  }
+
+  getStats () {
+    return new Promise<Statistics>((resolve, reject) => {
+      const params = new GISSerice.ParamsBuilder()
+      console.log(params.build())
+      this.axios.get<GISResult>(params.build())
+        .then(({ data }) => {
+          const buildingsCount = data.totalFeatures
+
+          const statsZIPCode = {} as {[key: string]: number}
+          data.features.forEach(f => {
+            if (!f.properties.CITY) {
+              return;
+            }
+            if (statsZIPCode[f.properties.CITY]) {
+              statsZIPCode[f.properties.CITY]++
+            } else {
+              statsZIPCode[f.properties.CITY] = 1
+            }
+          })
+
+          resolve({
+            statsZIPCode,
+            buildingsCount
+          } as Statistics)
         })
         .catch((e: unknown) => reject(e))
     })

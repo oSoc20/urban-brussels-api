@@ -29,3 +29,8 @@ export interface GISResult extends FeatureCollection<Point, IrismonumentProperti
   numberReturned: number;
   timeStamp: string;
 }
+
+export interface Statistics {
+  statsZIPCode: {[key: string]: number};
+  buildingsCount: number;
+}

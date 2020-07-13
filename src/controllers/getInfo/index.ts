@@ -23,4 +23,14 @@ controller.post('/byFilters', async function(request: Request, response: Respons
   }
 })
 
+// GET <controller>/stats
+controller.get('/stats', async function(request: Request, response: Response) {
+  try {
+    const result = await GISService.getStats()
+    response.json(result)
+  } catch (e) {
+    console.error('errrrrrrrrrrrrrrrrrrrrrrr', e)
+  }
+})
+
 export default controller
