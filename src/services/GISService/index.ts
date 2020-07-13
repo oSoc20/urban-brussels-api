@@ -1,6 +1,7 @@
 import Service from '../Service'
-import { GISResult, IrismonumentProperties, Statistics } from './types/Irismonument'
+import {GISResult, IrismonumentProperties, MunicipalityStatistics, Statistics} from './types/Irismonument'
 import { Params } from './types/Params'
+import {createPrivateKey} from "crypto";
 
 const URL_BASE = 'https://gis.urban.brussels/geoserver/ows'
 
@@ -143,6 +144,7 @@ class GISSerice extends Service {
         .then(({ data }) => {
           const buildingsCount = data.totalFeatures
 
+          // number of buildings per zip code
           const statsZIPCode = {} as {[key: string]: number}
           data.features.forEach(f => {
             if (!f.properties.CITY) {
@@ -155,9 +157,31 @@ class GISSerice extends Service {
             }
           })
 
+          // number of architectural styles per zip code
+          const municipalityStatistics = {} as {[key: string]: MunicipalityStatistics} // {[key: string]: number}
+          data.features.forEach(f => {
+            if (!f.properties.CITY || !f.properties.STYLE_FR) {
+              return;
+            }
+
+            if (!municipalityStatistics[f.properties.CITY]) {
+              municipalityStatistics[f.properties.CITY] = {
+                zipCode: '' + f.properties.CITY,
+                statsCount: {}
+              }
+            }
+
+            if (!municipalityStatistics[f.properties.CITY].statsCount[f.properties.STYLE_FR]) {
+              municipalityStatistics[f.properties.CITY].statsCount[f.properties.STYLE_FR] = 1
+            } else {
+              municipalityStatistics[f.properties.CITY].statsCount[f.properties.STYLE_FR]++
+            }
+          })
+
           resolve({
             statsZIPCode,
-            buildingsCount
+            buildingsCount,
+            municipalityStatistics
           } as Statistics)
         })
         .catch((e: unknown) => reject(e))

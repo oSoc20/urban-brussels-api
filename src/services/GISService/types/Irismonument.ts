@@ -30,7 +30,13 @@ export interface GISResult extends FeatureCollection<Point, IrismonumentProperti
   timeStamp: string;
 }
 
+export interface MunicipalityStatistics {
+  zipCode: string;
+  statsCount: {[key: string]: number};
+}
+
 export interface Statistics {
   statsZIPCode: {[key: string]: number};
   buildingsCount: number;
+  municipalityStatistics: {[key: string]: MunicipalityStatistics};
 }
