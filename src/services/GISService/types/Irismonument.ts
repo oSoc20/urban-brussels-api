@@ -39,4 +39,5 @@ export interface Statistics {
   statsZIPCode: {[key: string]: number};
   buildingsCount: number;
   municipalityStatistics: {[key: string]: MunicipalityStatistics};
+  stylesCount: {[key: string]: number};
 }

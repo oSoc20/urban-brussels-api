@@ -1,7 +1,6 @@
 import Service from '../Service'
 import {GISResult, IrismonumentProperties, MunicipalityStatistics, Statistics} from './types/Irismonument'
 import { Params } from './types/Params'
-import {createPrivateKey} from "crypto";
 
 const URL_BASE = 'https://gis.urban.brussels/geoserver/ows'
 
@@ -178,10 +177,25 @@ class GISSerice extends Service {
             }
           })
 
+          // number of times an architectural style is used
+          const stylesCount = {} as {[key: string]: number}
+          data.features.forEach(f => {
+            if (!f.properties.STYLE_FR) {
+              return;
+            }
+
+            if (stylesCount[f.properties.STYLE_FR]) {
+              stylesCount[f.properties.STYLE_FR]++
+            } else {
+              stylesCount[f.properties.STYLE_FR] = 1
+            }
+          })
+
           resolve({
             statsZIPCode,
             buildingsCount,
-            municipalityStatistics
+            municipalityStatistics,
+            stylesCount
           } as Statistics)
         })
         .catch((e: unknown) => reject(e))
