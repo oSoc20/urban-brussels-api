@@ -196,7 +196,7 @@ class GISSerice extends Service {
           })
 
           // number of times someone has been an intervenant for a building
-          const interventantsBuildingsCount = {} as {[key: string]: number}
+          const intervenantsBuildingsCount = {} as {[key: string]: number}
           data.features.forEach(f => {
             if (!f.properties.INTERVENANTS) {
               return;
@@ -208,10 +208,10 @@ class GISSerice extends Service {
                 const currentIntervenant = intervenant.replace(/\(.*\)/,'').trimEnd().trimStart()
 
                 // if the intervenant already exists, increment its count, otherwise initialise it and set it's count to 1
-                if (interventantsBuildingsCount[currentIntervenant]) {
-                  interventantsBuildingsCount[currentIntervenant]++
+                if (intervenantsBuildingsCount[currentIntervenant]) {
+                  intervenantsBuildingsCount[currentIntervenant]++
                 } else {
-                  interventantsBuildingsCount[currentIntervenant] = 1
+                  intervenantsBuildingsCount[currentIntervenant] = 1
                 }
               })
             } else {
@@ -220,10 +220,10 @@ class GISSerice extends Service {
               const currentIntervenant = f.properties.INTERVENANTS.toString().replace(/\(.*\)/,'').trimEnd()
 
               // if the intervenant already exists, increment its count, otherwise initialise it and set it's count to 1
-              if (interventantsBuildingsCount[currentIntervenant]) {
-                interventantsBuildingsCount[currentIntervenant]++
+              if (intervenantsBuildingsCount[currentIntervenant]) {
+                intervenantsBuildingsCount[currentIntervenant]++
               } else {
-                interventantsBuildingsCount[currentIntervenant] = 1
+                intervenantsBuildingsCount[currentIntervenant] = 1
               }
             }
           })
@@ -233,7 +233,7 @@ class GISSerice extends Service {
             buildingsCount,
             municipalityStatistics,
             stylesCount,
-            interventantsBuildingsCount
+            intervenantsBuildingsCount
           } as Statistics)
         })
         .catch((e: unknown) => reject(e))
