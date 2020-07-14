@@ -40,4 +40,5 @@ export interface Statistics {
   buildingsCount: number;
   municipalityStatistics: {[key: string]: MunicipalityStatistics};
   stylesCount: {[key: string]: number};
+  interventantsBuildingsCount: {[key: string]: number};
 }

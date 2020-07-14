@@ -149,6 +149,8 @@ class GISSerice extends Service {
             if (!f.properties.CITY) {
               return;
             }
+
+            // if the zipCode already exists, increment its count, otherwise initialise it and set it's count to 1
             if (statsZIPCode[f.properties.CITY]) {
               statsZIPCode[f.properties.CITY]++
             } else {
@@ -157,7 +159,7 @@ class GISSerice extends Service {
           })
 
           // number of architectural styles per zip code
-          const municipalityStatistics = {} as {[key: string]: MunicipalityStatistics} // {[key: string]: number}
+          const municipalityStatistics = {} as {[key: string]: MunicipalityStatistics}
           data.features.forEach(f => {
             if (!f.properties.CITY || !f.properties.STYLE_FR) {
               return;
@@ -180,10 +182,12 @@ class GISSerice extends Service {
           // number of times an architectural style is used
           const stylesCount = {} as {[key: string]: number}
           data.features.forEach(f => {
+            // check if the style is filled in
             if (!f.properties.STYLE_FR) {
               return;
             }
 
+            // if the style already exists, increment its count, otherwise initialise it and set it's count to 1
             if (stylesCount[f.properties.STYLE_FR]) {
               stylesCount[f.properties.STYLE_FR]++
             } else {
@@ -191,11 +195,45 @@ class GISSerice extends Service {
             }
           })
 
+          // number of times someone has been an intervenant for a building
+          const interventantsBuildingsCount = {} as {[key: string]: number}
+          data.features.forEach(f => {
+            if (!f.properties.INTERVENANTS) {
+              return;
+            }
+
+            if (f.properties.INTERVENANTS.includes(", ")) {
+              // multiple intervenants
+              f.properties.INTERVENANTS.toString().split(",").forEach(intervenant => {
+                const currentIntervenant = intervenant.replace(/\(.*\)/,'').trimEnd().trimStart()
+
+                // if the intervenant already exists, increment its count, otherwise initialise it and set it's count to 1
+                if (interventantsBuildingsCount[currentIntervenant]) {
+                  interventantsBuildingsCount[currentIntervenant]++
+                } else {
+                  interventantsBuildingsCount[currentIntervenant] = 1
+                }
+              })
+            } else {
+              // a single intervenant
+              // remove the year and whitespace from the intervenant's name
+              const currentIntervenant = f.properties.INTERVENANTS.toString().replace(/\(.*\)/,'').trimEnd()
+
+              // if the intervenant already exists, increment its count, otherwise initialise it and set it's count to 1
+              if (interventantsBuildingsCount[currentIntervenant]) {
+                interventantsBuildingsCount[currentIntervenant]++
+              } else {
+                interventantsBuildingsCount[currentIntervenant] = 1
+              }
+            }
+          })
+
           resolve({
             statsZIPCode,
             buildingsCount,
             municipalityStatistics,
-            stylesCount
+            stylesCount,
+            interventantsBuildingsCount
           } as Statistics)
         })
         .catch((e: unknown) => reject(e))
