@@ -52,12 +52,12 @@ npm run dev
 
 You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) or your internet browser (only for GET method)
 
-  * Get informations with the zip code (e.g. 1090):
+  * Get information with the zip code (e.g. 1090):
   ```
   GET http://localhost:3002/getInfo/byZipCode/1090
   ```
 
-  * Get informations with a filter (same zip code)
+  * Get information with a filter (same zip code)
   ```
   POST http://localhost:3002/getInfo/byFilters
   ```
@@ -65,4 +65,9 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   {
 	  "CITY": "1090"
   }
+  ```
+
+  * Get statistics about the municipalities, styles, intervenants (architects)
+  ```
+  GET http://localhost:9000/.netlify/functions/app/getInfo/stats
   ```
