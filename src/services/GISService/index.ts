@@ -4,7 +4,7 @@ import { Params } from './types/Params'
 
 const URL_BASE = 'https://gis.urban.brussels/geoserver/ows'
 
-class GISSerice extends Service {
+class GISService extends Service {
 
   static ParamsBuilder = class {
     private params: Params
@@ -64,7 +64,7 @@ class GISSerice extends Service {
         } else {
           const props = Object.entries(value)
           const conds = props.map(([key, value]): string => {
-            return value ? `${ key } = '${ escape(this.addslashes('' + value)) }'` : ''
+            return value ? `${ key } = '${ escape(this.addSlashes('' + value)) }'` : ''
           }).filter(s => s !== '')
 
           if (props.length === 0)
@@ -80,7 +80,7 @@ class GISSerice extends Service {
       return '?' + tmp.join('&');
     }
 
-    addslashes(str: string): string {
+    addSlashes(str: string): string {
       return str.replace(/\\/g, '\\\\').
         replace(/\t/g, '\\t').
         replace(/\n/g, '\\n').
@@ -97,7 +97,7 @@ class GISSerice extends Service {
 
   getInfoByZipCode (zipCode: number | string) {
     return new Promise<GISResult>((resolve, reject) => {
-      const params = new GISSerice.ParamsBuilder()
+      const params = new GISService.ParamsBuilder()
       params.setCQLFilter({ CITY: zipCode })
 
       this.axios.get<GISResult>(params.build())
@@ -118,7 +118,7 @@ class GISSerice extends Service {
 
   getInfoByFilters (filters: IrismonumentProperties, strict = true) {
     return new Promise<GISResult>((resolve, reject) => {
-      const params = new GISSerice.ParamsBuilder()
+      const params = new GISService.ParamsBuilder()
       params.setCQLFilter(filters)
       // console.log(params.build(strict))
       this.axios.get<GISResult>(params.build(strict))
@@ -137,7 +137,7 @@ class GISSerice extends Service {
 
   getStats () {
     return new Promise<Statistics>((resolve, reject) => {
-      const params = new GISSerice.ParamsBuilder()
+      const params = new GISService.ParamsBuilder()
       console.log(params.build())
       this.axios.get<GISResult>(params.build())
         .then(({ data }) => {
@@ -241,6 +241,6 @@ class GISSerice extends Service {
   }
 }
 
-const _default = new GISSerice()
+const _default = new GISService()
 
 export default _default
