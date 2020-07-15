@@ -14,7 +14,7 @@ controller.get('/byZipCode/:zipCode', async function(request: Request, response:
 controller.post('/byFilters', async function(request: Request, response: Response, next: NextFunction) {
   try {
     if (typeof request.body !== 'object' || Object.keys(request.body).length === 0) {
-      throw new AppError(400, 'No body, no fun')
+      throw new AppError(400, 'Invalid request')
     }
     const result = await GISService.getInfoByFilters(request.body, request.query.strict !== 'false')
     response.json(result)
