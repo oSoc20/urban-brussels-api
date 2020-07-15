@@ -1,16 +1,10 @@
 # Urban.Brussels-API
 
-## Table of Contents
-
-- [About](#about)
-- [Getting Started](#getting_started)
-- [Usage](#usage)
-
-## About <a name = "about"></a>
+## About
 
 Together with Urban.Brussels, we want to build an open web application that will visualize and map more than 35k urban properties to preserve the cultural heritage and history of Brussels. 
 
-## Getting Started <a name = "getting_started"></a>
+## Getting Started
 
 ### Prerequisites
 
@@ -34,9 +28,9 @@ and maybe ESM globaly
 npm install -g esm
 ```
 
-## Usage <a name = "usage"></a>
+## Usage
 
-### Start server
+### Starting server
 
 To recompile and start the server:
 ```
@@ -48,7 +42,7 @@ To start debugging:
 npm run dev
 ```
 
-### Use API
+### Using the API
 
 You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) or your internet browser (only for GET method)
 
