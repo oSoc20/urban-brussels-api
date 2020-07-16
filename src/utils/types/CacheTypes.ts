@@ -36,6 +36,8 @@ export interface Building extends Entity, Nammed {
   street: Street;
   number?: string;
   typo?: Typo;
-  styles?: Style[]
-  intervenants?: Intervenant[]
+  styles?: Style[];
+  intervenants?: Intervenant[];
+  gpsLat?: number;
+  gpsLon?: number;
 }

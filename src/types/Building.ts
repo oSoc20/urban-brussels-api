@@ -18,7 +18,9 @@ export interface Building {
   typo?: string;
   typoID?: string;
   style?: string[];
-  intervenants?: Intervenant[]
+  intervenants?: Intervenant[];
+  gpsLon?: number;
+  gpsLat?: number;
 }
 
 declare type omitLang = 'name' | 'street' | 'style' | 'city' | 'typo' | 'url'

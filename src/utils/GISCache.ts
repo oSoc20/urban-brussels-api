@@ -84,7 +84,9 @@ class GISCache {
         typoFR: props.TYPO_FR,
         typoNL: props.TYPO_NL,
         urlFR: props.URL_FR,
-        urlNL: props.URL_NL
+        urlNL: props.URL_NL,
+        gpsLon: f.geometry.coordinates[0],
+        gpsLat: f.geometry.coordinates[1]
       } as BuildingMulti
     })
   }
@@ -115,12 +117,13 @@ class GISCache {
         this.insertCity(city)
       }
 
+
       if (!streets[kStreet]) {
         const street = {
           uuid: uuidv4(),
           name_fr: d.streetFR || null,
           name_nl: d.streetNL || null,
-          city_id: cities[kCity] || null
+          city: cities[kCity] || null
         } as Street
         streets[kStreet] = street
         this.insertStreet(street)
@@ -148,7 +151,9 @@ class GISCache {
         image: d.image,
         street: streets[kStreet] || null,
         number: d.number,
-        typo: typos[kTypo] || null
+        typo: typos[kTypo] || null,
+        gpsLon: d.gpsLon || null,
+        gpsLat: d.gpsLat || null
       } as Building
       this.insertBuilding(building)
 
@@ -263,6 +268,8 @@ class GISCache {
         street_id text NOT NULL,
         number text,
         typo_id text,
+        gps_lon real,
+        gps_lat real,
         FOREIGN KEY(street_id) REFERENCES streets(uuid),
         FOREIGN KEY(typo_id) REFERENCES typos(uuid)
       )
@@ -324,7 +331,12 @@ class GISCache {
       )
       VALUES(?, ?, ?, ?);
     `)
-    return stmt.run(street.uuid, street.name_fr, street.name_nl, street.city)
+    return stmt.run(
+      street.uuid,
+      street.name_fr,
+      street.name_nl,
+      street.city ? street.city.uuid : null
+    )
   }
 
   private insertTypo(typo: Typo): RunResult {
@@ -340,9 +352,10 @@ class GISCache {
   private insertBuilding (building: Building): RunResult {
     const stmt = this.db.prepare(`
       INSERT INTO buildings (
-        uuid, id, name_fr, name_nl, url_fr, url_nl, id_bati_cms, image, street_id, "number", typo_id
+        uuid, id, name_fr, name_nl, url_fr, url_nl, id_bati_cms,
+        image, street_id, "number", typo_id, gps_lon, gps_lat
       )
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `)
     return stmt.run(
       building.uuid,
@@ -355,7 +368,9 @@ class GISCache {
       building.image,
       building.street ? building.street.uuid : null, // building?.street.uuid
       building.number,
-      building.typo ? building.typo.uuid : null
+      building.typo ? building.typo.uuid : null,
+      building.gpsLon,
+      building.gpsLat
     )
   }
 

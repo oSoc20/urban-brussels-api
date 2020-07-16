@@ -18,7 +18,7 @@ export class ByZipCode implements ICommandHandler<Request, Response[]> {
 
   Handle (command: Request): Response[] {
     const stmt = Cache.context.prepare('SELECT * FROM cities')
-    const result = stmt.get() // command.zipCode
+    const result = stmt.all() // command.zipCode
     console.log(result)
     return []
   }

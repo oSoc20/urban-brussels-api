@@ -1,6 +1,7 @@
 import Service from '../Service'
 import {GISResult, IrismonumentProperties, MunicipalityStatistics, Statistics} from './types/Irismonument'
 import { Params } from './types/Params'
+import { URLSearchParams } from 'url'
 
 const URL_BASE = 'https://gis.urban.brussels/geoserver/ows'
 const DEFAULT_TYPENAME = 'BSO_DML_BESC:Inventaris_Irismonument'
@@ -58,7 +59,7 @@ class GISService extends Service {
     }
 
     build (strict = true): string {
-      const tmp = new Array<string>()
+      /* const tmp = new Array<string>()
       Object.entries(this.params).forEach((key, value) => {
         if (typeof value === 'string') {
           tmp.push(`${ key }=${ escape(value) }`)
@@ -78,7 +79,26 @@ class GISService extends Service {
           )
         }
       })
-      return '?' + tmp.join('&');
+      return '?' + tmp.join('&'); */
+      const params = new URLSearchParams()
+      Object.entries(this.params).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          params.set(key, value)
+        } else {
+          const props = Object.entries(value)
+          const conds = props.map(([key, value]): string => {
+            return value ? `${ key } = '${ escape(this.addSlashes('' + value)) }'` : ''
+          }).filter(s => s !== '')
+
+          if (props.length === 0)
+          {
+            return;
+          }
+
+          params.set(key, conds.join(strict ? ' and ' : ' or '))
+        }
+      })
+      return '?' + params.toString()
     }
 
     addSlashes(str: string): string {
