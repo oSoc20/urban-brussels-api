@@ -1,13 +1,23 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import GISService from '../../services/GISService'
 import AppError from '../../errors/AppError'
+import { ByZipCode } from '../../facades/getInfo/byZipCode'
+import { Mediator } from 'tsmediator'
 
 const controller = Router()
 
+const mediator = new Mediator()
+
+
 // GET <controller>/byZipCode
-controller.get('/byZipCode/:zipCode', async function(request: Request, response: Response) {
-  const result = await GISService.getInfoByZipCode(request.params.zipCode)
-  response.json(result)
+controller.get('/byZipCode/:zipCode', async function(request: Request, response: Response, next: NextFunction) {
+  try {
+    // const result = await GISService.getInfoByZipCode(request.params.zipCode)
+    const result = mediator.Send(ByZipCode.Type, { lang: 'fr ', zipCode: request.params.zipCode })
+    response.json(result)
+  } catch (e) {
+    next(e)
+  }
 })
 
 // POST <controller>/byFilters
@@ -24,12 +34,12 @@ controller.post('/byFilters', async function(request: Request, response: Respons
 })
 
 // GET <controller>/stats
-controller.get('/stats', async function(request: Request, response: Response) {
+controller.get('/stats', async function(request: Request, response: Response, next: NextFunction) {
   try {
     const result = await GISService.getStats()
     response.json(result)
   } catch (e) {
-    console.error('errrrrrrrrrrrrrrrrrrrrrrr', e)
+    next(e)
   }
 })
 

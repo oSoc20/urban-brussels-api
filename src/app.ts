@@ -1,13 +1,10 @@
-import serverless from 'serverless-http'
-import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import compression from 'compression'
-import cLoader from './controllers/Loader'
 import errorHandler from './errors/handler'
-
-dotenv.config()
+import getInfo from './controllers/getInfo'
+import cache from './utils/GISCache'
 
 const app = express()
 
@@ -16,12 +13,15 @@ app.use(bodyParser.json())
 app.use(compression())
 app.use(cors())
 
-app.get('/.netlify/functions/app/ping', function (request, response) {
+app.get('/ping', function (request, response) {
+  console.log(cache)
   response.send('pong')
 })
 
-cLoader.loadFor(app, '/.netlify/functions/app')
+app.use('/info', getInfo)
 
 app.use(errorHandler)
 
-exports.handler = serverless(app)
+app.listen(9000, function () {
+  console.log('Server start on http://localhost:9000/ !🚀')
+})
