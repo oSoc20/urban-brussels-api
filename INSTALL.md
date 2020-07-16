@@ -1,5 +1,5 @@
 # Install [Node.js](https://nodejs.org)
-go on your <u>Debian-based server console</u> and type the following commands:
+Go on your <u>Debian-based server console</u> and type the following commands:
 ```sh
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt install nodejs
@@ -13,7 +13,7 @@ apt install nginx
 1. Create a configuration file `/etc/nginx/sites/sites-available/your_api.conf`
 ```css
   server {
-    server_name _; # "_" is the default servername, you can replace it with you domain
+    server_name _; # "_" is the default servername, you can replace it with your domain
 
     location / {
       proxy_pass http://localhost:9000/; # link to the api
