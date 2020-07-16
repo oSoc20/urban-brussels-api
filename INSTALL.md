@@ -5,7 +5,7 @@ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt install nodejs
 ```
 
-# Install NGINX
+# Install [NGINX](https://nginx.org/)
 ```sh
 apt install nginx
 ```
@@ -33,15 +33,16 @@ systemctl restart nginx
 4. **(Optional)** You can also include the ssl configuration in the configuration file or use [CertBot](https://certbot.eff.org).
 
 # Start the API
+## Instance a screen
 ```sh
 screen -dmS <your-api-screen-name> # e.g.: screen -dmS urban-api
 screen -r <your-api-screen-name> # e.g.: screen -dmS urban-api
 ```
 
-tip: to leave screen press <kbd>Ctrl</kdb> + <kbd>A</kdb> and <kbd>Ctrl</kdb> + <kbd>D</kdb>
+tip: to leave screen press <kbd>Ctrl</kbd> + <kbd>A</kbd> and <kbd>Ctrl</kbd> + <kbd>D</kbd>
 tip 2: if you forgot the name of your screen you can find it with `screen -list`
 
-# Start the service
+## Start the service
 Enter your api screen you created previously
 *don't forget to follow the `Readme.md` instructions*
 ```
