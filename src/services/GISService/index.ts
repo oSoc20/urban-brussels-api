@@ -102,12 +102,6 @@ class GISService extends Service {
 
       this.axios.get<GISResult>(params.build())
         .then(({ data }) => {
-          data.features = data.features.map(f => {
-            if (typeof f.properties.INTERVENANTS === 'string') {
-              f.properties.INTERVENANTS = f.properties.INTERVENANTS.split(',')
-            }
-            return f
-          })
           resolve(data as GISResult)
         })
         .catch((e: unknown) => {
@@ -123,15 +117,19 @@ class GISService extends Service {
       // console.log(params.build(strict))
       this.axios.get<GISResult>(params.build(strict))
         .then(({ data }) => {
-          data.features = data.features.map(f => {
-            if (typeof f.properties.INTERVENANTS === 'string') {
-              f.properties.INTERVENANTS = f.properties.INTERVENANTS.split(',')
-            }
-            return f
-          })
           resolve(data as GISResult)
         })
         .catch((e: unknown) => reject(e))
+    })
+  }
+
+  getAll() {
+    return new Promise<GISResult>((resolve, reject) => {
+    const params = new GISService.ParamsBuilder()
+      console.log(params.build())
+      this.axios.get<GISResult>(params.build())
+        .then(({ data }) => resolve(data))
+        .catch(e => reject(e))
     })
   }
 

@@ -18,7 +18,7 @@ export interface IrismonumentProperties {
   TYPO?: string;
   STYLE_NL?: string;
   STYLE_FR?: string;
-  INTERVENANTS?: string | string[];
+  INTERVENANTS?: string;
   ID?: string | number;
 }
 

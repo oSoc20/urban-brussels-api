@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "outDir": "./functions",
+    "outDir": "./build",
     "strict": true,
     "jsx": "preserve",
     "importHelpers": true,
@@ -23,7 +23,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/**/*.tsx", "src/utils/types"
   ],
   "exclude": [
     "node_modules"
