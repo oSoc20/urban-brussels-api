@@ -48,12 +48,12 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
 
   * Get information with the zip code (e.g. 1090):
   ```
-  GET http://localhost:3002/getInfo/byZipCode/1090
+  GET http://localhost:9000/getInfo/byZipCode/1090
   ```
 
   * Get information with a filter (same zip code)
   ```
-  POST http://localhost:3002/getInfo/byFilters
+  POST http://localhost:9000/getInfo/byFilters
   ```
   ```
   {
