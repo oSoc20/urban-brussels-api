@@ -1,5 +1,5 @@
 # Install [Node.js](https://nodejs.org)
-go on your __Debian-based server console__ and type the following commands:
+go on your <u>Debian-based server console</u> and type the following commands:
 ```sh
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt install nodejs
@@ -39,8 +39,8 @@ screen -dmS <your-api-screen-name> # e.g.: screen -dmS urban-api
 screen -r <your-api-screen-name> # e.g.: screen -dmS urban-api
 ```
 
-tip: to leave screen press <kbd>Ctrl</kbd> + <kbd>A</kbd> and <kbd>Ctrl</kbd> + <kbd>D</kbd>
-tip 2: if you forgot the name of your screen you can find it with `screen -list`
+* tip: to leave screen press <kbd>Ctrl</kbd> + <kbd>A</kbd> and <kbd>Ctrl</kbd> + <kbd>D</kbd>
+* tip 2: if you forgot the name of your screen you can find it with `screen -list`
 
 ## Start the service
 Enter your api screen you created previously
