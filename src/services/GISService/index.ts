@@ -3,6 +3,7 @@ import {GISResult, IrismonumentProperties, MunicipalityStatistics, Statistics} f
 import { Params } from './types/Params'
 
 const URL_BASE = 'https://gis.urban.brussels/geoserver/ows'
+const DEFAULT_TYPENAME = 'BSO_DML_BESC:Inventaris_Irismonument'
 
 class GISService extends Service {
 
@@ -14,7 +15,7 @@ class GISService extends Service {
         service: 'wfs',
         version: '2.0.0',
         request: 'GetFeature',
-        TypeName: 'BSO_DML_BESC:Inventaris_Irismonument', // 'BDU_DMS_PROT:Inventaire_Irismonument',
+        TypeName: DEFAULT_TYPENAME,
         outputformat: 'application/json',
         cql_filter: {},
         srsname: 'EPSG:4326'
@@ -58,7 +59,7 @@ class GISService extends Service {
 
     build (strict = true): string {
       const tmp = new Array<string>()
-      for (const [key, value] of Object.entries(this.params)) {
+      Object.entries(this.params).forEach((key, value) => {
         if (typeof value === 'string') {
           tmp.push(`${ key }=${ escape(value) }`)
         } else {
@@ -69,14 +70,14 @@ class GISService extends Service {
 
           if (props.length === 0)
           {
-            continue;
+            return;
           }
 
           tmp.push(
             `${ key }=${ conds.join(strict ? ' and ' : ' or ') }`
           )
         }
-      }
+      })
       return '?' + tmp.join('&');
     }
 
