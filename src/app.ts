@@ -6,7 +6,6 @@ import errorHandler from './errors/handler'
 import getInfo from './controllers/getInfo'
 import getAutocomplete from './controllers/autocomplete'
 import getSearch from './controllers/search'
-import getSearchRandom from './controllers/search/random'
 import cache from './utils/GISCache'
 
 const app = express()
@@ -35,7 +34,6 @@ app.get('/ping', function (_request, response) {
 // controllers
 app.use('/info', getInfo)
 app.use('/search', getSearch)
-app.use('/search/random', getSearchRandom)
 app.use('/autocomplete', getAutocomplete)
 
 app.use(errorHandler)

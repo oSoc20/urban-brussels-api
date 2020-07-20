@@ -1,41 +1,37 @@
-import {ICommandHandler, Handler} from 'tsmediator'
+import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../../utils/GISCache'
-import {v4 as uuidv4} from 'uuid'
+import { v4 as uuidv4 } from 'uuid'
 
 export interface Request {
-    lang: 'fr' | 'nl';
-    query: string;
+  lang: 'fr' | 'nl';
+  query: string;
 }
 
 interface Result {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
+  building: string;
+  city: string;
+  intervenant: unknown[];
+  street: string;
+  styles: unknown[];
+  typos: string;
 }
 
-export interface Response //  extends Building
+export interface Response
 {
-    lang: 'fr' | 'nl';
-    buildings: Result[];
-    cities: Result[];
-    intervenants: Result[];
-    streets: Result[];
-    styles: Result[];
-    typos: Result[];
+  lang: 'fr' | 'nl';
+  result: Result[];
 }
 
 @Handler(SearchRandom.Type)
 export class SearchRandom implements ICommandHandler<Request, Response> {
-    public static get Type(): string {
-        return 'SearchRandom'
-    }
+  public static get Type(): string { return 'SearchRandom' }
 
-    Handle(command: Request): Response {
-        if (typeof command.query !== 'string' || command.query.length < 2) {
-            command.query = uuidv4()
-        }
-        command.query = '%' + command.query.trim() + '%'
+  Handle(command: Request): Response {
+    command.query = '%' + command.query.trim() + '%'
 
-        const stmt_inter = Cache.context.prepare(`
+    const stmt_inter = Cache.context.prepare(`
           SELECT
             uuid as id,
             name
@@ -44,8 +40,9 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
             name LIKE ?
         `)
 
-        return {
-            intervenants: stmt_inter.all(command.query)
-        } as Response
-    }
+    return {
+      lang: command.lang,
+      result: []
+    } as Response
+  }
 }
