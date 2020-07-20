@@ -1,6 +1,6 @@
 import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../utils/GISCache'
-import { v4 as uuidv4 } from 'uuid'
+import AppError from '../../errors/AppError'
 
 export interface Request {
   lang: 'fr' | 'nl';
@@ -12,7 +12,7 @@ interface Result {
   name: string;
 }
 
-export interface Response //  extends Building
+export interface Response
 {
   lang: 'fr' | 'nl';
   streets: Result[];
@@ -23,10 +23,13 @@ export interface Response //  extends Building
 export class Autocomplete implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'Autocomplete' }
 
-  Handle (command: Request): Response {
-    if (typeof command.query !== 'string' || command.query.length < 3) {
-      command.query = uuidv4()
+  Validate (request: Request): void {
+    if (typeof request.query !== 'string' || request.query.length < 2) {
+      throw new AppError(400, "Query too short")
     }
+  }
+
+  Handle (command: Request): Response {
     command.query = '%' + command.query.trim() + '%'
     const stmt_street = Cache.context.prepare(`
       SELECT

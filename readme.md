@@ -73,7 +73,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   | METHOD | endpoint | params | description |
   |--------|----------|--------|-------------|
   | **GET** | /autocomplete | lang  | specify the language that you want<br />value: `fr` \| `nl` |
-  |         |               | query | string with what you want, e.g.: `"Victor h"` <br /> min-length: 3 characters|
+  |         |               | query | string with what you want, e.g.: `"Victor h"` <br /> min-length: 2 characters|
 
   ## Result
   ```json
