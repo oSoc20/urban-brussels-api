@@ -15,7 +15,11 @@ interface Result {
 export interface Response
 {
   lang: 'fr' | 'nl';
+  zipCodes: Result[];
+  cities: Result[];
   streets: Result[];
+  typos: Result[];
+  styles: Result[];
   intervenants: Result[];
 }
 
@@ -30,8 +34,29 @@ export class Autocomplete implements ICommandHandler<Request, Response> {
   }
 
   Handle (command: Request): Response {
-    command.query = '%' + command.query.trim() + '%'
-    const stmt_street = Cache.context.prepare(`
+    const likeQuery = '%' + command.query.trim() + '%'
+
+    const stmt_zipCodes = Cache.context.prepare(`
+      SELECT
+        uuid as id,
+        zip_code as name
+      FROM cities
+      WHERE
+        zip_code LIKE ?
+    `)
+
+    const stmt_cities = Cache.context.prepare(`
+      SELECT
+        uuid as id,
+        name_${command.lang} as name
+      FROM cities
+      WHERE
+        (name_fr LIKE ?)
+          OR
+        (name_nl LIKE ?)
+    `)
+
+    const stmt_streets = Cache.context.prepare(`
       SELECT
         uuid as id,
         name_${command.lang} as name
@@ -41,7 +66,30 @@ export class Autocomplete implements ICommandHandler<Request, Response> {
           OR
         (name_nl LIKE ?)
     `)
-    const stmt_inter = Cache.context.prepare(`
+
+    /* const stmt_typos = Cache.context.prepare(`
+      SELECT
+        uuid as id,
+        name_${command.lang} as name
+      FROM streets
+      WHERE
+        (name_fr LIKE ?)
+          OR
+        (name_nl LIKE ?)
+    `) */
+
+    const stmt_styles = Cache.context.prepare(`
+      SELECT
+        uuid as id,
+        name_${command.lang} as name
+      FROM styles
+      WHERE
+        (name_fr LIKE ?)
+          OR
+        (name_nl LIKE ?)
+    `)
+
+    const stmt_inters = Cache.context.prepare(`
       SELECT
         uuid as id,
         name
@@ -49,10 +97,15 @@ export class Autocomplete implements ICommandHandler<Request, Response> {
       WHERE
         name LIKE ?
     `)
+
     return {
       lang: command.lang,
-      streets: stmt_street.all(command.query, command.query),
-      intervenants: stmt_inter.all(command.query)
+      zipCodes: stmt_zipCodes.all(command.query + '%'),
+      cities: stmt_cities.all(likeQuery, likeQuery),
+      streets: stmt_streets.all(likeQuery, likeQuery),
+      typos: [], // todo : requiert to parse typos
+      styles: stmt_styles.all(likeQuery, likeQuery),
+      intervenants: stmt_inters.all(likeQuery)
     } as Response
   }
 }
