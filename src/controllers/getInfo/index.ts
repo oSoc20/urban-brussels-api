@@ -10,10 +10,10 @@ const mediator = new Mediator()
 
 
 // GET <controller>/byZipCode
-controller.get('/byZipCode/:zipCode', async function(request: Request, response: Response, next: NextFunction) {
+controller.get('/byZipCode', async function(request: Request, response: Response, next: NextFunction) {
   try {
     // const result = await GISService.getInfoByZipCode(request.params.zipCode)
-    const result = mediator.Send(ByZipCode.Type, { lang: 'fr ', zipCode: request.params.zipCode })
+    const result = mediator.Send(ByZipCode.Type, request.query)
     response.json(result)
   } catch (e) {
     next(e)
