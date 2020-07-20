@@ -100,7 +100,7 @@ export class Autocomplete implements ICommandHandler<Request, Response> {
 
     return {
       lang: command.lang,
-      zipCodes: stmt_zipCodes.all('%' + command.query),
+      zipCodes: stmt_zipCodes.all(command.query + '%'),
       cities: stmt_cities.all(likeQuery, likeQuery),
       streets: stmt_streets.all(likeQuery, likeQuery),
       typos: [], // todo : requiert to parse typos
