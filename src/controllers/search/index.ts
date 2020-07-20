@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { Mediator } from 'tsmediator'
-import { Search } from '../../facades/search'
-import { SearchRandom } from '../../facades/search/random'
+import { Search } from './../../facades/search'
+import { SearchRandom } from './../../facades/search/random'
 
 const controller = Router()
 
