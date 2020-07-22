@@ -56,7 +56,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   |         |               | query | string with what you want, e.g.: `"Victor h"` <br /> min-length: **2** characters|
 
   ##### Example
-  ```js
+  ```http request
   GET https://api.urban-brussels.osoc.be/autocomplete?lang=nl&query=victor
   ```
 
@@ -101,3 +101,17 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   ...
 }
   ```
+
+  ### Search
+  
+  #### Request
+  
+  | METHOD | endpoint | params | description |
+  |--------|----------|--------|-------------|
+  | **POST** | /search | lang  | specify the language that you want<br />value: `"fr"` or `"nl"` |
+  |         |               | zipcode | the buildings you want by zipcode, e.g.: `1090`|
+
+  ##### Example
+  ```http request
+    POST https://api.urban-brussels.osoc.be/search?lang=fr&zipcode=1090
+  ``` 
