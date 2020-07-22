@@ -6,12 +6,11 @@ import {Feature, FeatureCollection, Point} from "geojson";
 export interface Request {
   lang: 'fr' | 'nl';
   zipcode: number;
-  //city: string;
-  //typology: string;
-  //style: string;
-  //architect: string;
-  //street: string;
-  //query: string;
+  city: string;
+  intervenants: string;
+  typology: string;
+  styles: string;
+  streets: string;
 }
 
 interface Result {
@@ -23,7 +22,6 @@ interface Result {
 export interface Response extends FeatureCollection<Point, Result>//  extends Building
 {
   lang: 'fr' | 'nl';
-  buildings: Result[];
   cities: Result[];
   intervenants: Result[];
   streets: Result[];
@@ -52,8 +50,10 @@ export class Search implements ICommandHandler<Request, Response> {
         buildings.gps_lon as lon,
         buildings.gps_lat as lat,
         cities.zip_code as zip_code,
+        cities.name_${command.lang} as city,
         streets.name_${command.lang} as street,
-        buildings.number as building_number
+        buildings.number as building_number,
+        typos.name_${command.lang} as typology
       FROM buildings
       LEFT JOIN typos ON buildings.typo_id = typos.uuid
       LEFT JOIN streets ON buildings.street_id = streets.uuid
@@ -73,7 +73,12 @@ export class Search implements ICommandHandler<Request, Response> {
         },
         properties: {
           name: f['name'],
-          zip_code: f['zip_code']
+          zip_code: f['zip_code'],
+          city: f['city'],
+          street: f['street'],
+          number: f['number'],
+          image: f['image'],
+          typology: f['typology']
         }
       } as unknown as Feature<Point, Result>
     })
