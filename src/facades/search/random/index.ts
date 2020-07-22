@@ -1,6 +1,7 @@
 import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../../utils/GISCache'
 import AppError from "./../../../errors/AppError";
+import { FeatureCollection, Point, Feature } from 'geojson';
 
 export interface Request {
   lang: 'fr' | 'nl';
@@ -18,9 +19,8 @@ interface Result {
   typos: string;
 }
 
-export interface Response {
+export interface Response extends FeatureCollection<Point, Result> {
   lang: 'fr' | 'nl';
-  result: Result[];
 }
 
 @Handler(SearchRandom.Type)
@@ -39,17 +39,35 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
     console.log(command)
     const stmt_facts = Cache.context.prepare(`
           SELECT
-            name_${command.lang} as name
+            name_${command.lang} as name,
+            gps_lat as lat,
+            gps_lon as lon
           FROM buildings
           WHERE
             (name_nl and name_fr) is not null
           ORDER BY random()
           LIMIT ?
         `)
+    
+    const result = stmt_facts.all(command.limit).map(b => {
+      return {
+        geometry: {
+          type: 'Point',
+          coordinates: [
+            b['lon'],
+            b['lat']
+          ]
+        },
+        properties: {
+          name: b['name']
+        }
+      } as Feature<Point, Result>
+    })
 
     return {
       lang: command.lang,
-      result: stmt_facts.all(command.limit)
+      type: 'FeatureCollection',
+      features: result
     } as Response
   }
 }
