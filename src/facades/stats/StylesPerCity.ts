@@ -3,7 +3,6 @@ import Cache from '../../utils/GISCache'
 
 export interface Request {
   lang: 'fr' | 'nl';
-  query: string;
 }
 
 interface Result {

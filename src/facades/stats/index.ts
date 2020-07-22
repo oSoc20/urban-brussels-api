@@ -1,15 +1,17 @@
 import { ICommandHandler, Handler, Mediator } from 'tsmediator'
-import { Response as ReponseSPC, StylesPerCity } from './StylesPerCity'
+import { Response as ResponseSPC, StylesPerCity } from './StylesPerCity'
+import { Response as ResponseBPI, BuildingsPerIntervenant } from './BuildingsPerIntervenant'
 
 export interface Request {
   lang: 'fr' | 'nl';
-  query: string;
+  [key:string]: unknown;
 }
 
 export interface Response
 {
   lang: 'fr' | 'nl';
-  stylesPerCity: ReponseSPC;
+  stylesPerCity: ResponseSPC;
+  BuildingsPerIntervenant: ResponseBPI;
 }
 
 const mediator = new Mediator()
@@ -23,7 +25,8 @@ export class GlobalStats implements ICommandHandler<Request, Response> {
 
     return {
       lang: command.lang,
-      stylesPerCity: mediator.Send(StylesPerCity.Type, command)
+      stylesPerCity: mediator.Send(StylesPerCity.Type, command),
+      BuildingsPerIntervenant: mediator.Send(BuildingsPerIntervenant.Type, command)
     } as Response
   }
 }
