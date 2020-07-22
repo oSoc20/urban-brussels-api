@@ -1,18 +1,26 @@
 import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../utils/GISCache'
 import AppError from "./../../errors/AppError";
+import {Feature, FeatureCollection, Point} from "geojson";
 
 export interface Request {
   lang: 'fr' | 'nl';
-  query: string;
+  zipcode: number;
+  //city: string;
+  //typology: string;
+  //style: string;
+  //architect: string;
+  //street: string;
+  //query: string;
 }
 
 interface Result {
   id: string;
   name: string;
+  //city: string;
 }
 
-export interface Response //  extends Building
+export interface Response extends FeatureCollection<Point, Result>//  extends Building
 {
   lang: 'fr' | 'nl';
   buildings: Result[];
@@ -28,45 +36,52 @@ export class Search implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'Search' }
 
   Validate (request: Request): void {
-    if (typeof request.query !== 'string' || request.query.length < 2) {
+    if (isNaN(request.zipcode) /*|| request.typology.length < 2*/) {
       throw new AppError(400, "Query too short")
     }
   }
 
   Handle (command: Request): Response {
-    command.query = '%' + command.query.trim() + '%'
+    //command.query = '%' + command.query.trim() + '%'
+    console.log(command)
 
-    const stmt_buildings = Cache.context.prepare(``)
-    const stmt_cities = Cache.context.prepare(``)
-    const stmt_inter = Cache.context.prepare(`
-      SELECT
-        uuid as id,
-        name
-      FROM intervenants
-      WHERE
-        name LIKE ?
+    const stmt_features = Cache.context.prepare(`
+      SELECT 
+        buildings.name_${command.lang} as name,
+        buildings.image as image,
+        buildings.gps_lon as lon,
+        buildings.gps_lat as lat,
+        cities.zip_code as zip_code,
+        streets.name_${command.lang} as street,
+        buildings.number as building_number
+      FROM buildings
+      LEFT JOIN typos ON buildings.typo_id = typos.uuid
+      LEFT JOIN streets ON buildings.street_id = streets.uuid
+      LEFT JOIN cities ON streets.city_id = cities.uuid
+      WHERE 
+        cities.zip_code LIKE ?
     `)
-    const stmt_styles = Cache.context.prepare(``);
-    const stmt_street = Cache.context.prepare(`
-      SELECT
-        uuid as id,
-        name_${command.lang} as name
-      FROM streets
-      WHERE
-        (name_fr LIKE ?)
-          OR
-        (name_nl LIKE ?)
-    `)
-    const stmt_typos = Cache.context.prepare(``)
+
+    const result = stmt_features.all(command.zipcode).map(f => {
+      return {
+        geometry: {
+          type: 'Point',
+          coordinates: [
+            f['lon'],
+            f['lat']
+          ]
+        },
+        properties: {
+          name: f['name'],
+          zip_code: f['zip_code']
+        }
+      } as unknown as Feature<Point, Result>
+    })
 
     return {
       lang: command.lang,
-      cities: stmt_cities.all(command.query),
-      buildings: stmt_buildings.all(command.query),
-      intervenants: stmt_inter.all(command.query),
-      streets: stmt_street.all(command.query, command.query),
-      styles: stmt_styles.all(command.query),
-      typos: stmt_typos.all(command.query)
+      type: 'FeatureCollection',
+      features: result
     } as Response
   }
 }
