@@ -5,6 +5,7 @@ import compression from 'compression'
 import errorHandler from './errors/handler'
 import getInfo from './controllers/getInfo'
 import getAutocomplete from './controllers/autocomplete'
+import getStatistics from './controllers/stats'
 import getSearch from './controllers/search'
 import cache from './utils/GISCache'
 
@@ -35,6 +36,7 @@ app.get('/ping', function (_request, response) {
 app.use('/info', getInfo)
 app.use('/search', getSearch)
 app.use('/autocomplete', getAutocomplete)
+app.use('/stats', getStatistics)
 
 app.use(errorHandler)
 

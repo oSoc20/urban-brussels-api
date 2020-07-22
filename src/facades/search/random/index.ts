@@ -59,7 +59,7 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           ]
         },
         properties: {
-          name: b['name']
+          name: b['name'] // fields
         }
       } as Feature<Point, Result>
     })
