@@ -78,12 +78,6 @@ export class Search implements ICommandHandler<Request, Response> {
   }
 
   Handle (command: Request): Response {
-    console.log(this.separateIntervenants(command.intervenants))
-    console.log(this.separateCities(command.cities))
-    console.log(this.separateTypographies(command.typographies))
-    console.log(this.separateStyles(command.styles))
-    console.log(this.separateStreets(command.streets))
-
     if (command.strict) {
       console.log("strict mode is true, still has to be implemented")
     } else {
