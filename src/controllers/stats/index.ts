@@ -8,17 +8,17 @@ const controller = Router()
 const mediator = new Mediator()
 
 controller.use(cacheControl({
-    maxAge: 7 * 86400 // 7 days
+  maxAge: 7 * 86400 // 7 days
 }))
 
 // GET <controller>/
 controller.get('/', async function(request: Request, response: Response, next: NextFunction) {
-    try {
-        const result = mediator.Send(GlobalStats.Type, request.query)
-        response.json(result)
-    } catch (e) {
-        next(e)
-    }
+  try {
+    const result = mediator.Send(GlobalStats.Type, request.query)
+    response.json(result)
+  } catch (e) {
+    next(e)
+  }
 })
 
 export default controller
