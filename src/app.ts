@@ -17,7 +17,7 @@ app.use(compression())
 app.use(cors())
 app.use(function (request, _response, next) {
   // prevent sql injection with "lang"
-  if (request.query.lang !== 'string' || !request.query.lang.match(/^(fr|nl)$/)) {
+  if (typeof request.query.lang !== 'string' || !request.query.lang.match(/^(fr|nl)$/)) {
     if (request.headers['accept-language'] && request.headers['accept-language'].match(/nl/)) {
       request.query.lang = 'nl'
     } else {
