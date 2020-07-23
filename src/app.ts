@@ -7,6 +7,7 @@ import getInfo from './controllers/getInfo'
 import getAutocomplete from './controllers/autocomplete'
 import getStatistics from './controllers/stats'
 import getSearch from './controllers/search'
+import getFunFacts from './controllers/funFacts'
 import './utils/GISCache'
 
 const app = express()
@@ -36,6 +37,7 @@ app.use('/info', getInfo)
 app.use('/search', getSearch)
 app.use('/autocomplete', getAutocomplete)
 app.use('/stats', getStatistics)
+app.use('/funfacts', getFunFacts)
 
 app.use(errorHandler)
 
