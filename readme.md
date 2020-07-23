@@ -106,12 +106,34 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   
   #### Request
   
-  | METHOD | endpoint | params | description |
-  |--------|----------|--------|-------------|
-  | **POST** | /search | lang  | specify the language that you want<br />value: `"fr"` or `"nl"` |
-  |         |               | zipcode | the buildings you want by zipcode, e.g.: `1090`|
+  | METHOD | endpoint | body |
+  |--------|----------|--------|
+  | **POST** | /search | JSON data (see example)  |
 
   ##### Example
   ```http request
-    POST https://api.urban-brussels.osoc.be/search?lang=fr&zipcode=1090
+    POST https://api.urban-brussels.osoc.be/search
   ``` 
+  
+  Please note that strict must be set to false for the moment. Example with the following body:
+  ```json
+  {
+      "lang": "fr",
+      "strict": false,
+      "zipcode": "1090",
+      "city": "Jette",
+      "typology": "villa",
+      "styles": null,
+      "architects": null,
+      "streets": null
+  }
+  ```
+  
+  If you want to use the command line, this should work for UNIX systems:
+  ```bash
+  curl --header "Content-Type: application/json" \
+    --request POST \
+    --data '{"lang":"fr","strict":false,"zipcode": "1090","city": "Jette","typology": "villa","styles": null,"architects": null,"streets": null}' \
+    http://localhost:9000/search
+  ```
+  On Windows machines you should escape the " with a \ . It is preferable to use a tool like Postman in this case for usability.
