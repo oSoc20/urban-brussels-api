@@ -41,6 +41,8 @@ export class PredominantStylePerIntervenant implements ICommandHandler<Request, 
         )
       GROUP BY
         name
+      ORDER BY
+        style_count DESC
     `)
 
   return stmt.all() as Response
