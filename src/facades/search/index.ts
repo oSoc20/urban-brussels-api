@@ -83,17 +83,18 @@ export class Search implements ICommandHandler<Request, Response> {
     } else {
       this.stmt_features = Cache.context.prepare(`
       SELECT 
-        buildings.name_${command.lang} as name,
-        buildings.image as image,
-        buildings.gps_lon as lon,
-        buildings.gps_lat as lat,
-        cities.zip_code as zip_code,
-        cities.name_${command.lang} as city,
-        streets.name_${command.lang} as street,
-        buildings.number as building_number,
-        styles.name_${command.lang} as styles,
-        typographies.name_${command.lang} as typography,
-        GROUP_CONCAT(intervenants.name, ', ') as intervenants
+        buildings.name_${command.lang} AS name,
+        buildings.image AS image,
+        buildings.gps_lon AS lon,
+        buildings.gps_lat AS lat,
+        buildings.url_${command.lang} AS url,
+        cities.zip_code AS zip_code,
+        cities.name_${command.lang} AS city,
+        streets.name_${command.lang} AS street,
+        buildings.number AS building_number,
+        styles.name_${command.lang} AS styles,
+        typographies.name_${command.lang} AS typography,
+        GROUP_CONCAT(DISTINCT intervenants.name) AS intervenants
       FROM buildings
       LEFT JOIN streets ON buildings.street_id = streets.uuid
       LEFT JOIN cities ON streets.city_id = cities.uuid
@@ -111,12 +112,12 @@ export class Search implements ICommandHandler<Request, Response> {
         ${this.separateStyles(command.styles)}
         ${this.separateStreets(command.streets)}
       GROUP BY 
-        buildings_intervenants.building_id,
-        buildings_intervenants.intervenant_id
+        buildings_intervenants.building_id
     `)
     }
 
     const result = this.stmt_features.all(command.zipcode).map((f: { [x: string]: never; }) => {
+      const intervenants = '' + f['intervenants']
       return ({
         geometry: {
           type: 'Point',
@@ -131,10 +132,11 @@ export class Search implements ICommandHandler<Request, Response> {
           city: f['city'],
           street: f['street'],
           number: f['building_number'],
+          url: f['url'],
           image: f['image'],
           styles: f['styles'],
           typographies: f['typography'],
-          intervenants: f['intervenants']
+          intervenants: intervenants.split(",")
         }
       } as unknown as Feature<Point, Result>);
     })
