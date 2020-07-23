@@ -47,16 +47,17 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           cities.name_${command.lang} as city,
           streets.name_${command.lang} as street,
           buildings.number as building_number,
-          typos.name_${command.lang} as typology,
+          typographies.name_${command.lang} as typography,
           GROUP_CONCAT(intervenants.name, ', ') as intervenants
         FROM buildings
-        LEFT JOIN typos ON buildings.typo_id = typos.uuid
         LEFT JOIN streets ON buildings.street_id = streets.uuid
         LEFT JOIN cities ON streets.city_id = cities.uuid
         LEFT JOIN buildings_intervenants ON buildings.uuid = buildings_intervenants.building_id
         LEFT JOIN intervenants ON buildings_intervenants.intervenant_id = intervenants.uuid
         LEFT JOIN buildings_styles ON buildings.uuid = buildings_styles.building_id
         LEFT JOIN styles ON buildings_styles.style_id = styles.uuid
+        LEFT JOIN buildings_typographies ON buildings.uuid = buildings_typographies.building_id
+        LEFT JOIN typographies ON buildings_typographies.typography_id = typographies.uuid
         GROUP BY 
           buildings_intervenants.building_id,
           buildings_intervenants.intervenant_id
@@ -80,7 +81,7 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           street: b['street'],
           number: b['number'],
           image: b['image'],
-          typology: b['typology'],
+          typographies: b['typography'],
           intervenants: b['intervenants']
         }
       } as unknown as Feature<Point, Result>;
