@@ -44,6 +44,8 @@ export class PredominantStylePerCity implements ICommandHandler<Request, Respons
         )
       GROUP BY
         city
+      ORDER BY
+        style_count DESC
     `)
 
   return stmt.all() as Response

@@ -25,6 +25,8 @@ export class BuildingsPerStyle implements ICommandHandler<Request, Response> {
         ON (styles.uuid = buildings_styles.style_id)
       GROUP BY
         styles.uuid
+      ORDER BY
+        building_count DESC
     `)
 
     const response = {} as Response

@@ -22,7 +22,7 @@ export class BuildingsPerIntervenant implements ICommandHandler<void, Response> 
       GROUP BY
         intervenants.uuid
       ORDER BY
-        intervenants.name ASC
+        building_count DESC
     `)
 
     const response = {} as Response

@@ -43,6 +43,8 @@ export class StylesPerCity implements ICommandHandler<Request, Response> {
       GROUP BY
         cities.uuid,
         styles.uuid
+      ORDER BY
+        building_count DESC
     `)
 
     const tmp = new Map<string, Result>()
