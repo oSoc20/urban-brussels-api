@@ -7,7 +7,7 @@ import getInfo from './controllers/getInfo'
 import getAutocomplete from './controllers/autocomplete'
 import getStatistics from './controllers/stats'
 import getSearch from './controllers/search'
-import cache from './utils/GISCache'
+import './utils/GISCache'
 
 const app = express()
 
@@ -28,7 +28,6 @@ app.use(function (request, _response, next) {
 })
 
 app.get('/ping', function (_request, response) {
-  console.log(cache)
   response.send('pong')
 })
 
