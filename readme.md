@@ -115,17 +115,20 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
     POST https://api.urban-brussels.osoc.be/search
   ``` 
   
-  Please note that strict must be set to false for the moment. Example with the following body:
+  - Please note that `strict` must be set to `false` for the moment.
+  - The keys `cities`, `intervenants` (architects), `streets`, `styles` and `typographies` MUST all be an array.<br>
+  - When `strict` is set to `false`, all entries in the arrays will be valid filter. e.g.: upon filtering the intervenants, buildings either with 'Victor HORTA' OR 'mathieu' as intervenant(s) will be returned. The same functionality is applied to the other keys where an array is needed.<br>
+  Example with the following body:
   ```json
   {
       "lang": "fr",
       "strict": false,
-      "zipcode": "1090",
-      "city": "Jette",
-      "typology": "villa",
-      "styles": null,
-      "architects": null,
-      "streets": null
+      "zipcode": "",
+      "cities": ["Laken", "Anderlecht"],
+      "intervenants": ["Victor HORTA", "mathieu"],
+      "streets": [],
+      "styles": [],
+      "typographies": ["villa"]
   }
   ```
   
@@ -133,7 +136,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   ```bash
   curl --header "Content-Type: application/json" \
     --request POST \
-    --data '{"lang":"fr","strict":false,"zipcode": "1090","city": "Jette","typology": "villa","styles": null,"architects": null,"streets": null}' \
+    --data '{"lang": "fr","strict": false,"zipcode": "","cities": ["Laken", "Anderlecht"],"intervenants": ["Victor HORTA", "mathieu"],"streets": [],"styles": [],"typographies": ["villa"]}' \
     http://localhost:9000/search
   ```
   On Windows machines you should escape the " with a \ . It is preferable to use a tool like Postman in this case for usability.
