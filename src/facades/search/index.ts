@@ -91,6 +91,7 @@ export class Search implements ICommandHandler<Request, Response> {
         cities.name_${command.lang} as city,
         streets.name_${command.lang} as street,
         buildings.number as building_number,
+        styles.name_${command.lang} as styles,
         typographies.name_${command.lang} as typography,
         GROUP_CONCAT(intervenants.name, ', ') as intervenants
       FROM buildings
@@ -129,8 +130,9 @@ export class Search implements ICommandHandler<Request, Response> {
           zip_code: f['zip_code'],
           city: f['city'],
           street: f['street'],
-          number: f['number'],
+          number: f['building_number'],
           image: f['image'],
+          styles: f['styles'],
           typographies: f['typography'],
           intervenants: f['intervenants']
         }

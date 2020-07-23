@@ -47,6 +47,7 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           cities.name_${command.lang} as city,
           streets.name_${command.lang} as street,
           buildings.number as building_number,
+          styles.name_${command.lang} as styles,
           typographies.name_${command.lang} as typography,
           GROUP_CONCAT(intervenants.name, ', ') as intervenants
         FROM buildings
@@ -79,8 +80,9 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           zip_code: b['zip_code'],
           city: b['city'],
           street: b['street'],
-          number: b['number'],
+          number: b['building_number'],
           image: b['image'],
+          styles: b['styles'],
           typographies: b['typography'],
           intervenants: b['intervenants']
         }
