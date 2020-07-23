@@ -106,7 +106,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   
   #### Request
   
-  | METHOD | endpoint | body |
+  | METHOD | Endpoint | Body |
   |--------|----------|--------|
   | **POST** | /search | JSON data (see example)  |
 
@@ -137,3 +137,17 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
     http://localhost:9000/search
   ```
   On Windows machines you should escape the " with a \ . It is preferable to use a tool like Postman in this case for usability.
+  
+  ### Random search
+    
+  #### Request
+    
+  |  METHOD |     Endpoint    | Parameters | Description |
+  |---------|-----------------|------------|-------------|
+  | **GET** | /search/random  |    lang    | Language of the result |
+  |         |                 |    limit   | Number of buildings in the result|
+  
+  ##### Example
+  ```http request
+    GET https://api.urban-brussels.osoc.be/search/random?lang=fr&limit=3
+  ``` 
