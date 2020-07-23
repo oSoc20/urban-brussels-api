@@ -38,16 +38,31 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
   Handle (command: Request): Response {
     console.log(command)
     const stmt_facts = Cache.context.prepare(`
-          SELECT
-            name_${command.lang} as name,
-            gps_lat as lat,
-            gps_lon as lon
-          FROM buildings
-          WHERE
-            (name_nl and name_fr) is not null
-          ORDER BY random()
-          LIMIT ?
-        `)
+        SELECT 
+          buildings.name_${command.lang} as name,
+          buildings.image as image,
+          buildings.gps_lon as lon,
+          buildings.gps_lat as lat,
+          cities.zip_code as zip_code,
+          cities.name_${command.lang} as city,
+          streets.name_${command.lang} as street,
+          buildings.number as building_number,
+          typos.name_${command.lang} as typology,
+          GROUP_CONCAT(intervenants.name, ', ') as intervenants
+        FROM buildings
+        LEFT JOIN typos ON buildings.typo_id = typos.uuid
+        LEFT JOIN streets ON buildings.street_id = streets.uuid
+        LEFT JOIN cities ON streets.city_id = cities.uuid
+        LEFT JOIN buildings_intervenants ON buildings.uuid = buildings_intervenants.building_id
+        LEFT JOIN intervenants ON buildings_intervenants.intervenant_id = intervenants.uuid
+        LEFT JOIN buildings_styles ON buildings.uuid = buildings_styles.building_id
+        LEFT JOIN styles ON buildings_styles.style_id = styles.uuid
+        GROUP BY 
+          buildings_intervenants.building_id,
+          buildings_intervenants.intervenant_id
+        ORDER BY random()
+        LIMIT ?
+      `)
     
     const result = stmt_facts.all(command.limit).map(b => {
       return {
@@ -59,9 +74,16 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           ]
         },
         properties: {
-          name: b['name'] // fields
+          name: b['name'],
+          zip_code: b['zip_code'],
+          city: b['city'],
+          street: b['street'],
+          number: b['number'],
+          image: b['image'],
+          typology: b['typology'],
+          intervenants: b['intervenants']
         }
-      } as Feature<Point, Result>
+      } as unknown as Feature<Point, Result>;
     })
 
     return {
