@@ -1,8 +1,8 @@
 import sqlite3, { Database, RunResult } from 'better-sqlite3'
 import GISService from '../services/GISService'
 import { v4 as uuidv4 } from 'uuid'
-import { BuildingMulti, Intervenant as IntervenantAPI } from '@/types/Building'
-import { City, Street, Style, Typo, Intervenant, Building } from './types/CacheTypes'
+import { BuildingMulti, Intervenant as IntervenantAPI, TypographyMulti as TypographyAPI } from '@/types/Building'
+import { City, Street, Style, Typography, Intervenant, Building } from './types/CacheTypes'
 
 const maxAge = 86400 * 7 // seconds
 
@@ -57,14 +57,24 @@ class GISCache {
       const props = f.properties
       const styleFR = props.STYLE_FR ? props.STYLE_FR.split(/\s*,\s*/) : null // props.STYLE_FR?.split( ts-3.7
       const styleNL = props.STYLE_NL ? props.STYLE_NL.split(/\s*,\s*/) : null
+      const typoID = props.TYPO ? props.TYPO.split(/\s*,\s*/) : null
+      const typoFR = props.TYPO_FR ? props.TYPO_FR.split(/\s*,\s*/) : null
+      const typoNL = props.TYPO_NL ? props.TYPO_NL.split(/\s*,\s*/) : null
       const intervenants = props.INTERVENANTS ? props.INTERVENANTS.split(/(\s*),\s*/).map(inter => {
-        const data = inter.trim().match(/^(?<name>[^\d]+)(?:\((?<start>\d{4})(?:-(?<end>\d{4}))?\))?$/)
+        const data = inter.trim().match(/^(?<name>.+)(?:\(\s*(?<start>\d{4})\s*(?:-(?<end>\d{4}))?\))$/)
         return (data && data.groups ? {
           name: data.groups ? data.groups.name.trim() : inter,
           startYear: data.groups.start || null,
           endYear: data.groups.end || null
-        } : { name: inter })as IntervenantAPI
-      }).filter(inter => inter.name.replace(/\s+/g, '') !== '') : null
+        } : { name: inter }) as IntervenantAPI
+      }).filter(inter => inter.name && inter.name.replace(/\s+/g, '') !== '') : null
+      const typographies = typoID ? typoID.map((typo_id, i) => {
+        return {
+          id: typo_id,
+          nameFR: typoFR && typoFR[i] ? typoFR[i] : null,
+          nameNL: typoNL && typoNL[i] ? typoNL[i] : null
+        } as TypographyAPI
+      }): []
       return {
         zipCode: props.CITY,
         cityFR: props.CITIES_FR,
@@ -80,9 +90,7 @@ class GISCache {
         streetNL: props.STREET_NL,
         styleFR,
         styleNL,
-        typoID: props.TYPO,
-        typoFR: props.TYPO_FR,
-        typoNL: props.TYPO_NL,
+        typo: typographies,
         urlFR: props.URL_FR,
         urlNL: props.URL_NL,
         gpsLon: f.geometry.coordinates[0],
@@ -96,14 +104,14 @@ class GISCache {
     const cities = {} as { [key: string]: City }
     const streets = {} as { [key: string]: Street }
     const styles = {} as { [key: string]: Style }
-    const typos = {} as { [key: string]: Typo }
+    const typographies = {} as { [key: string]: Typography }
     const intervenants = {} as { [key: string]: Intervenant }
 
     data.forEach(d => {
       // evaluate unique keys
-      const kCity = '' /* + d.cityFR + d.cityNL */ + d.zipCode
+      const kCity = '' + d.zipCode
       const kStreet = '' + d.streetFR + d.streetFR + d.zipCode
-      const kTypo = '' + d.typoID + d.typoFR + d.typoNL
+      //  const ktypography = '' + d.typographyID + d.typographyFR + d.typographyNL
 
       // Insert Entities
       if (!cities[kCity]) {
@@ -129,17 +137,6 @@ class GISCache {
         this.insertStreet(street)
       }
 
-      if (!typos[kTypo]) {
-        const typo = {
-          uuid: uuidv4(),
-          name_fr: d.typoFR || null,
-          name_nl: d.typoNL || null,
-          id: d.typoID ? +d.typoID : null
-        } as Typo
-        typos[kTypo] = typo
-        this.insertTypo(typo)
-      }
-
       const building = {
         uuid: uuidv4(),
         name_fr: d.nameFR || null,
@@ -151,7 +148,6 @@ class GISCache {
         image: d.image,
         street: streets[kStreet] || null,
         number: d.number,
-        typo: typos[kTypo] || null,
         gpsLon: d.gpsLon || null,
         gpsLat: d.gpsLat || null
       } as Building
@@ -175,8 +171,30 @@ class GISCache {
         }
       }
 
+      if (d.typo) {
+        const l = d.typo.length
+        for (let i = 0; i < l; ++i) {
+          const kTypo = '' + d.typo[i].nameFR + d.typo[i].nameNL
+          if (!typographies[kTypo]) {
+            const typo = {
+              uuid: uuidv4(),
+              id: d.typo[i].id || null,
+              name_fr: d.typo[i].nameFR || null,
+              name_nl: d.typo[i].nameNL || null
+            } as Typography
+            typographies[kTypo] = typo
+            this.insertTypography(typo)
+          }
+          // create relation
+          this.linkTypography(building.uuid, typographies[kTypo].uuid)
+        }
+      }
+
       if (d.intervenants) {
         for (const inter of d.intervenants) {
+          if (!inter.name) {
+            continue
+          }
           inter.name = inter.name.trim()
           if (!intervenants[inter.name]) {
             const intervenant = {
@@ -235,11 +253,11 @@ class GISCache {
       )
     `)
 
-    // Entity Table "typos"
+    // Entity Table "typographies"
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS typos (
+      CREATE TABLE IF NOT EXISTS typographies (
         uuid text primary KEY,
-        id integer,
+        id text,
         name_fr text,
         name_nl text,
         UNIQUE (name_fr, name_nl)
@@ -267,11 +285,9 @@ class GISCache {
         image text,
         street_id text NOT NULL,
         number text,
-        typo_id text,
         gps_lon real,
         gps_lat real,
-        FOREIGN KEY(street_id) REFERENCES streets(uuid),
-        FOREIGN KEY(typo_id) REFERENCES typos(uuid)
+        FOREIGN KEY(street_id) REFERENCES streets(uuid)
       )
     `)
 
@@ -283,6 +299,17 @@ class GISCache {
         PRIMARY KEY (building_id, style_id),
         FOREIGN KEY(building_id) REFERENCES buildings(uuid),
         FOREIGN KEY(style_id) REFERENCES styles(uuid)
+      )
+    `)
+
+    // Relation Table "buildings_typographies"
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS buildings_typographies (
+        building_id text NOT NULL,
+        typography_id text NOT NULL,
+        PRIMARY KEY (building_id, typography_id),
+        FOREIGN KEY(building_id) REFERENCES buildings(uuid),
+        FOREIGN KEY(typography_id) REFERENCES typographies(uuid)
       )
     `)
 
@@ -309,7 +336,7 @@ class GISCache {
         DELETE from streets;
         DELETE from cities;
         DELETE from styles;
-        DELETE from typos;
+        DELETE from typographies;
         `) // VACCUM
     }
   }
@@ -339,23 +366,13 @@ class GISCache {
     )
   }
 
-  private insertTypo(typo: Typo): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO typos (
-        uuid, id, name_fr, name_nl
-      )
-      VALUES(?, ?, ?, ?);
-    `)
-    return stmt.run(typo.uuid, typo.id, typo.name_fr, typo.name_nl)
-  }
-
   private insertBuilding (building: Building): RunResult {
     const stmt = this.db.prepare(`
       INSERT INTO buildings (
         uuid, id, name_fr, name_nl, url_fr, url_nl, id_bati_cms,
-        image, street_id, "number", typo_id, gps_lon, gps_lat
+        image, street_id, "number", gps_lon, gps_lat
       )
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `)
     return stmt.run(
       building.uuid,
@@ -368,7 +385,6 @@ class GISCache {
       building.image,
       building.street ? building.street.uuid : null, // building?.street.uuid
       building.number,
-      building.typo ? building.typo.uuid : null,
       building.gpsLon,
       building.gpsLat
     )
@@ -382,6 +398,16 @@ class GISCache {
       VALUES(?, ?, ?);
     `)
     return stmt.run(style.uuid, style.name_fr, style.name_nl)
+  }
+
+  private insertTypography (typo: Typography): RunResult {
+    const stmt = this.db.prepare(`
+      INSERT INTO typographies (
+        uuid, id, name_fr, name_nl
+      )
+      VALUES(?, ?, ?, ?);
+    `)
+    return stmt.run(typo.uuid, typo.id, typo.name_fr, typo.name_nl)
   }
 
   private insertIntervenant (intervenant: Intervenant): RunResult {
@@ -404,6 +430,16 @@ class GISCache {
     return stmt.run(building_id, style_id)
   }
 
+  private linkTypography (building_id: string, typo_id: string): RunResult {
+    const stmt = this.db.prepare(`
+      INSERT INTO buildings_typographies (
+        building_id, typography_id
+      )
+      VALUES(?, ?);
+    `)
+    return stmt.run(building_id, typo_id)
+  }
+
   private linkIntervenant (building_id: string, intervenant_id: string, start?: number, end?: number): RunResult {
     const stmt = this.db.prepare(`
       INSERT INTO buildings_intervenants (
@@ -411,12 +447,7 @@ class GISCache {
       )
       VALUES(?, ?, ?, ?);
     `)
-    try {
-      return stmt.run(building_id, intervenant_id, start, end)
-    } catch (e) {
-      console.log(building_id, intervenant_id)
-      throw e
-    }
+    return stmt.run(building_id, intervenant_id, start, end)
   }
 }
 
