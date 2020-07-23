@@ -10,7 +10,7 @@ const mediator = new Mediator()
 // GET <controller>/
 controller.post('/', async function(request: Request, response: Response, next: NextFunction) {
     try {
-        const result = mediator.Send(Search.Type, request.query)
+        const result = mediator.Send(Search.Type, request.body)
         response.json(result)
     } catch (e) {
         next(e)
