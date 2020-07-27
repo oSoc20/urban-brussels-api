@@ -11,10 +11,10 @@ controller.use(cacheControl({
   maxAge: 7 * 86400 // 7 days
 }))
 
-// GET <controller>/
-controller.get('/', async function(request: Request, response: Response, next: NextFunction) {
+// POST <controller>/
+controller.post('/', async function(request: Request, response: Response, next: NextFunction) {
   try {
-    const result = mediator.Send(GlobalStats.Type, request.query)
+    const result = mediator.Send(GlobalStats.Type, request.body)
     response.json(result)
   } catch (e) {
     next(e)
