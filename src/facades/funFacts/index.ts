@@ -91,18 +91,18 @@ export class FunFacts implements ICommandHandler<Request, Response> {
               SELECT
                 buildings.name_${command.lang} as building,
                 buildings.uuid,
-                GROUP_CONCAT(typographies.name_${command.lang}, '|') as typologies,
+                GROUP_CONCAT(typologies.name_${command.lang}, '|') as typologies,
                 COUNT(*) as typos_counter
               FROM
-                typographies
+                typologies
               JOIN
-                buildings_typographies
-                ON (buildings_typographies.typography_id = typographies.uuid)
+                buildings_typologies
+                ON (buildings_typologies.typology_id = typologies.uuid)
               JOIN
                 buildings
-                ON (buildings.uuid = buildings_typographies.building_id)
+                ON (buildings.uuid = buildings_typologies.building_id)
               GROUP BY
-                buildings_typographies.building_id
+                buildings_typologies.building_id
               HAVING
                 building IS NOT NULL
               ORDER BY
@@ -201,7 +201,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
                 --	SELECT
                 --		COUNT(*)
                 --	FROM
-                --		buildings_typographies
+                --		buildings_typologies
                 --	WHERE
                 --		building_id = buildings_intervenants.building_id
                 --) as typos_count

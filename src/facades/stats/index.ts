@@ -4,7 +4,7 @@ import { Response as ResponseBPI, BuildingsPerIntervenant } from './BuildingsPer
 import { Response as ResponseBPS, BuildingsPerStyle } from './BuildingsPerStyle'
 import { Response as ResponsePSPC, PredominantStylePerCity } from './PredominantStylePerCity'
 import { Response as ResponsePSPI, PredominantStylePerIntervenant } from './PredominantStylePerIntervenant'
-import { Response as ResponseBPT, BuildingsPerTypography } from './BuildingsPerTypography'
+import { Response as ResponseBPT, BuildingsPerTypology } from './BuildingsPerTypology'
 import { Response as ResponseBPY, BuildingsPerYear } from './BuildingsPerYear'
 
 export interface Request {
@@ -20,7 +20,7 @@ export interface Response
   BuildingsPerStyle: ResponseBPS;
   PredominantStylePerCity: ResponsePSPC;
   PredominantStylePerIntervenant: ResponsePSPI;
-  BuildingsPerTypography: ResponseBPT;
+  BuildingsPerTypology: ResponseBPT;
   BuildingsPerYear: ResponseBPY;
 }
 
@@ -38,7 +38,7 @@ export class GlobalStats implements ICommandHandler<Request, Response> {
       BuildingsPerStyle: mediator.Send(BuildingsPerStyle.Type, command),
       PredominantStylePerCity: mediator.Send(PredominantStylePerCity.Type, command),
       PredominantStylePerIntervenant: mediator.Send(PredominantStylePerIntervenant.Type, command),
-      BuildingsPerTypography: mediator.Send(BuildingsPerTypography.Type, command),
+      BuildingsPerTypology: mediator.Send(BuildingsPerTypology.Type, command),
       BuildingsPerYear: mediator.Send(BuildingsPerYear.Type, command)
     } as Response
   }

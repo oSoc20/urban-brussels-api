@@ -19,7 +19,7 @@ export interface Style extends Entity, Nammed {
   //
 }
 
-export interface Typography extends Entity, Nammed {
+export interface Typology extends Entity, Nammed {
   id?: string;
 }
 
@@ -35,7 +35,7 @@ export interface Building extends Entity, Nammed {
   image?: string;
   street: Street;
   number?: string;
-  typographies?: Typography[];
+  typologies?: Typology[];
   styles?: Style[];
   intervenants?: Intervenant[];
   gpsLat?: number;

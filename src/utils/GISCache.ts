@@ -1,8 +1,8 @@
 import sqlite3, { Database, RunResult } from 'better-sqlite3'
 import GISService from '../services/GISService'
 import { v4 as uuidv4 } from 'uuid'
-import { BuildingMulti, Intervenant as IntervenantAPI, TypographyMulti as TypographyAPI } from '@/types/Building'
-import { City, Street, Style, Typography, Intervenant, Building } from './types/CacheTypes'
+import { BuildingMulti, Intervenant as IntervenantAPI, TypologyMulti as TypologyAPI } from '@/types/Building'
+import { City, Street, Style, Typology, Intervenant, Building } from './types/CacheTypes'
 
 const maxAge = 86400 * 7 // seconds
 
@@ -68,12 +68,12 @@ class GISCache {
           endYear: data.groups.end || null
         } : { name: inter }) as IntervenantAPI
       }).filter(inter => inter.name && inter.name.replace(/\s+/g, '') !== '') : null
-      const typographies = typoID ? typoID.map((typo_id, i) => {
+      const typologies = typoID ? typoID.map((typo_id, i) => {
         return {
           id: typo_id,
           nameFR: typoFR && typoFR[i] ? typoFR[i] : null,
           nameNL: typoNL && typoNL[i] ? typoNL[i] : null
-        } as TypographyAPI
+        } as TypologyAPI
       }): []
       return {
         zipCode: props.CITY,
@@ -90,7 +90,7 @@ class GISCache {
         streetNL: props.STREET_NL,
         styleFR,
         styleNL,
-        typo: typographies,
+        typo: typologies,
         urlFR: props.URL_FR,
         urlNL: props.URL_NL,
         gpsLon: f.geometry.coordinates[0],
@@ -104,14 +104,14 @@ class GISCache {
     const cities = {} as { [key: string]: City }
     const streets = {} as { [key: string]: Street }
     const styles = {} as { [key: string]: Style }
-    const typographies = {} as { [key: string]: Typography }
+    const typologies = {} as { [key: string]: Typology }
     const intervenants = {} as { [key: string]: Intervenant }
 
     data.forEach(d => {
       // evaluate unique keys
       const kCity = '' + d.zipCode
       const kStreet = '' + d.streetFR + d.streetFR + d.zipCode
-      //  const ktypography = '' + d.typographyID + d.typographyFR + d.typographyNL
+      //  const ktypology = '' + d.typologyID + d.typologyFR + d.typologyNL
 
       // Insert Entities
       if (!cities[kCity]) {
@@ -175,18 +175,18 @@ class GISCache {
         const l = d.typo.length
         for (let i = 0; i < l; ++i) {
           const kTypo = '' + d.typo[i].nameFR + d.typo[i].nameNL
-          if (!typographies[kTypo]) {
+          if (!typologies[kTypo]) {
             const typo = {
               uuid: uuidv4(),
               id: d.typo[i].id || null,
               name_fr: d.typo[i].nameFR || null,
               name_nl: d.typo[i].nameNL || null
-            } as Typography
-            typographies[kTypo] = typo
-            this.insertTypography(typo)
+            } as Typology
+            typologies[kTypo] = typo
+            this.insertTypology(typo)
           }
           // create relation
-          this.linkTypography(building.uuid, typographies[kTypo].uuid)
+          this.linkTypology(building.uuid, typologies[kTypo].uuid)
         }
       }
 
@@ -253,9 +253,9 @@ class GISCache {
       )
     `)
 
-    // Entity Table "typographies"
+    // Entity Table "typologies"
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS typographies (
+      CREATE TABLE IF NOT EXISTS typologies (
         uuid text primary KEY,
         id text,
         name_fr text,
@@ -302,14 +302,14 @@ class GISCache {
       )
     `)
 
-    // Relation Table "buildings_typographies"
+    // Relation Table "buildings_typologies"
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS buildings_typographies (
+      CREATE TABLE IF NOT EXISTS buildings_typologies (
         building_id text NOT NULL,
-        typography_id text NOT NULL,
-        PRIMARY KEY (building_id, typography_id),
+        typology_id text NOT NULL,
+        PRIMARY KEY (building_id, typology_id),
         FOREIGN KEY(building_id) REFERENCES buildings(uuid),
-        FOREIGN KEY(typography_id) REFERENCES typographies(uuid)
+        FOREIGN KEY(typology_id) REFERENCES typologies(uuid)
       )
     `)
 
@@ -336,7 +336,7 @@ class GISCache {
         DELETE from streets;
         DELETE from cities;
         DELETE from styles;
-        DELETE from typographies;
+        DELETE from typologies;
         `) // VACCUM
     }
   }
@@ -400,9 +400,9 @@ class GISCache {
     return stmt.run(style.uuid, style.name_fr, style.name_nl)
   }
 
-  private insertTypography (typo: Typography): RunResult {
+  private insertTypology (typo: Typology): RunResult {
     const stmt = this.db.prepare(`
-      INSERT INTO typographies (
+      INSERT INTO typologies (
         uuid, id, name_fr, name_nl
       )
       VALUES(?, ?, ?, ?);
@@ -430,10 +430,10 @@ class GISCache {
     return stmt.run(building_id, style_id)
   }
 
-  private linkTypography (building_id: string, typo_id: string): RunResult {
+  private linkTypology (building_id: string, typo_id: string): RunResult {
     const stmt = this.db.prepare(`
-      INSERT INTO buildings_typographies (
-        building_id, typography_id
+      INSERT INTO buildings_typologies (
+        building_id, typology_id
       )
       VALUES(?, ?);
     `)

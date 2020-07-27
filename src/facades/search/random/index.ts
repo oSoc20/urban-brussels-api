@@ -49,7 +49,7 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           streets.name_${command.lang} AS street,
           buildings.number AS building_number,
           styles.name_${command.lang} AS styles,
-          typographies.name_${command.lang} AS typography,
+          typologies.name_${command.lang} AS typology,
           GROUP_CONCAT(DISTINCT intervenants.name) AS intervenants
         FROM buildings
         LEFT JOIN streets ON buildings.street_id = streets.uuid
@@ -58,8 +58,8 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
         LEFT JOIN intervenants ON buildings_intervenants.intervenant_id = intervenants.uuid
         LEFT JOIN buildings_styles ON buildings.uuid = buildings_styles.building_id
         LEFT JOIN styles ON buildings_styles.style_id = styles.uuid
-        LEFT JOIN buildings_typographies ON buildings.uuid = buildings_typographies.building_id
-        LEFT JOIN typographies ON buildings_typographies.typography_id = typographies.uuid
+        LEFT JOIN buildings_typologies ON buildings.uuid = buildings_typologies.building_id
+        LEFT JOIN typologies ON buildings_typologies.typology_id = typologies.uuid
         GROUP BY 
           buildings_intervenants.building_id
         ORDER BY random()
@@ -85,7 +85,7 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           url: b['url'],
           image: b['image'],
           styles: b['styles'],
-          typographies: b['typography'],
+          typologies: b['typology'],
           intervenants: intervenants.split(",")
         }
       } as unknown as Feature<Point, Result>;

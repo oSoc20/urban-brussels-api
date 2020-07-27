@@ -4,7 +4,7 @@ export interface Intervenant {
   endYear?: number;
 }
 
-export interface Typography {
+export interface Typology {
   id: string;
   name: string;
 }
@@ -20,7 +20,7 @@ export interface Building {
   number?: string;
   zipCode: string;
   city?: string;
-  typo?: Typography[];
+  typo?: Typology[];
   style?: string[];
   intervenants?: Intervenant[];
   gpsLon?: number;
@@ -29,7 +29,7 @@ export interface Building {
 
 declare type omitLang = 'name' | 'street' | 'style' | 'city' | 'typo' | 'url'
 
-export interface TypographyNL extends Omit<Typography, 'name'> {
+export interface TypologyNL extends Omit<Typology, 'name'> {
   nameNL?: string;
 }
 
@@ -39,11 +39,11 @@ export interface BuildingNL extends Omit<Building, omitLang> {
   streetNL?: string;
   styleNL?: string[];
   cityNL?: string;
-  typoNL?: TypographyNL[];
+  typoNL?: TypologyNL[];
   urlNL?: string;
 }
 
-export interface TypographyFR extends Omit<Typography, 'name'> {
+export interface TypologyFR extends Omit<Typology, 'name'> {
   nameFR?: string;
 }
 
@@ -53,14 +53,14 @@ export interface BuildingFR extends Omit<Building, omitLang> {
   streetFR?: string;
   styleFR?: string[];
   cityFR?: string;
-  typoFR?: TypographyFR[];
+  typoFR?: TypologyFR[];
   urlFR?: string;
 }
 
-export interface TypographyMulti extends TypographyFR, TypographyNL {
+export interface TypologyMulti extends TypologyFR, TypologyNL {
   //
 }
 
 export interface BuildingMulti extends Omit<BuildingNL, 'lang' | 'typoNL'>, Omit<BuildingFR, 'lang' | 'typoFR'> {
-  typo: TypographyMulti[]
+  typo: TypologyMulti[]
 }

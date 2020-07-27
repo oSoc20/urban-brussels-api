@@ -7,7 +7,7 @@ export interface Request {
   zipcode: number;
   cities: string[];
   intervenants: string[];
-  typographies: string[];
+  typologies: string[];
   styles: string[];
   streets: string[];
   strict: boolean;
@@ -50,13 +50,13 @@ export class Search implements ICommandHandler<Request, Response> {
     return cities_list
   }
 
-  separateTypographies (typographies: string[]): string {
-    let typographies_list = ''
-    for (const typography of typographies) {
-      typographies_list += ` OR typographies.name_nl LIKE '%${typography.trim()}%'`
-      typographies_list += ` OR typographies.name_fr LIKE '%${typography.trim()}%'`
+  separateTypologies (typologies: string[]): string {
+    let typologies_list = ''
+    for (const typology of typologies) {
+      typologies_list += ` OR typologies.name_nl LIKE '%${typology.trim()}%'`
+      typologies_list += ` OR typologies.name_fr LIKE '%${typology.trim()}%'`
     }
-    return typographies_list
+    return typologies_list
   }
 
   separateStyles (styles: string[]): string {
@@ -93,7 +93,7 @@ export class Search implements ICommandHandler<Request, Response> {
         streets.name_${command.lang} AS street,
         buildings.number AS building_number,
         styles.name_${command.lang} AS styles,
-        typographies.name_${command.lang} AS typography,
+        typologies.name_${command.lang} AS typology,
         GROUP_CONCAT(DISTINCT intervenants.name) AS intervenants
       FROM buildings
       LEFT JOIN streets ON buildings.street_id = streets.uuid
@@ -102,12 +102,12 @@ export class Search implements ICommandHandler<Request, Response> {
       LEFT JOIN intervenants ON buildings_intervenants.intervenant_id = intervenants.uuid
       LEFT JOIN buildings_styles ON buildings.uuid = buildings_styles.building_id
       LEFT JOIN styles ON buildings_styles.style_id = styles.uuid
-      LEFT JOIN buildings_typographies ON buildings.uuid = buildings_typographies.building_id
-      LEFT JOIN typographies ON buildings_typographies.typography_id = typographies.uuid
+      LEFT JOIN buildings_typologies ON buildings.uuid = buildings_typologies.building_id
+      LEFT JOIN typologies ON buildings_typologies.typology_id = typologies.uuid
       WHERE 
         cities.zip_code LIKE ?
         ${this.separateCities(command.cities)}
-        ${this.separateTypographies(command.typographies)}
+        ${this.separateTypologies(command.typologies)}
         ${this.separateIntervenants(command.intervenants)}
         ${this.separateStyles(command.styles)}
         ${this.separateStreets(command.streets)}
@@ -135,7 +135,7 @@ export class Search implements ICommandHandler<Request, Response> {
           url: f['url'],
           image: f['image'],
           styles: f['styles'],
-          typographies: f['typography'],
+          typologies: f['typology'],
           intervenants: intervenants.split(",")
         }
       } as unknown as Feature<Point, Result>);

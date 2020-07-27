@@ -68,7 +68,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   |      | zipCodes | array     | List of zip codes <u>beginning</u> with the query |
   |      | cities | array       | List of cities that contain the query |
   |      | streets| array       | List of streets that contain the query |
-  |      | typos  | array       | List of typographies that contain the query |
+  |      | typos  | array       | List of typologies that contain the query |
   |      | styles | array       | List of styles that contain the query |
   |      | intervenants | array | List of architects that contain the query |
 
@@ -116,7 +116,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   ``` 
   
   - Please note that `strict` must be set to `false` for the moment.
-  - The keys `cities`, `intervenants` (architects), `streets`, `styles` and `typographies` MUST all be an array.<br>
+  - The keys `cities`, `intervenants` (architects), `streets`, `styles` and `typologies` MUST all be an array.<br>
   - When `strict` is set to `false`, all entries in the arrays will be valid filter. e.g.: upon filtering the intervenants, buildings either with 'Victor HORTA' OR 'mathieu' as intervenant(s) will be returned. The same functionality is applied to the other keys where an array is needed.<br>
   Example with the following body:
   ```json
@@ -128,7 +128,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
       "intervenants": ["Victor HORTA", "mathieu"],
       "streets": [],
       "styles": [],
-      "typographies": ["villa"]
+      "typologies": ["villa"]
   }
   ```
   
@@ -136,7 +136,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   ```bash
   curl --header "Content-Type: application/json" \
     --request POST \
-    --data '{"lang": "fr","strict": false,"zipcode": "","cities": ["Laken", "Anderlecht"],"intervenants": ["Victor HORTA", "mathieu"],"streets": [],"styles": [],"typographies": ["villa"]}' \
+    --data '{"lang": "fr","strict": false,"zipcode": "","cities": ["Laken", "Anderlecht"],"intervenants": ["Victor HORTA", "mathieu"],"streets": [],"styles": [],"typologies": ["villa"]}' \
     http://localhost:9000/search
   ```
   On Windows machines you should escape the " with a \ . It is preferable to use a tool like Postman in this case for usability.
