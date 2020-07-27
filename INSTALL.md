@@ -36,7 +36,7 @@ systemctl restart nginx
 ## Instance a screen
 ```sh
 screen -dmS <your-api-screen-name> # e.g.: screen -dmS urban-api
-screen -r <your-api-screen-name> # e.g.: screen -dmS urban-api
+screen -r <your-api-screen-name> # e.g.: screen -r urban-api
 ```
 
 * tip: to leave screen press <kbd>Ctrl</kbd> + <kbd>A</kbd> and <kbd>Ctrl</kbd> + <kbd>D</kbd>
