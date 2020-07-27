@@ -4,13 +4,12 @@ import {Feature, FeatureCollection, Point} from "geojson";
 
 export interface Request {
   lang: 'fr' | 'nl';
-  zipcode: number;
   cities: string[];
   intervenants: string[];
   typologies: string[];
   styles: string[];
   streets: string[];
-  strict: boolean;
+  zipcodes: string[];
 }
 
 interface Result {
@@ -33,56 +32,73 @@ export class Search implements ICommandHandler<Request, Response> {
   private stmt_features: any;
   public static get Type (): string { return 'Search' }
 
-  separateIntervenants (intervenants: string[]): string {
-    let intervenants_list = ''
-    for (const intervenant of intervenants) {
-      intervenants_list += ` OR intervenants.name LIKE '%${intervenant.trim()}%'`
-    }
-    return intervenants_list
-  }
-
   separateCities (cities: string[]): string {
     let cities_list = ''
-    for (const city of cities) {
-      cities_list += ` OR cities.name_nl LIKE '%${city.trim()}%'`
-      cities_list += ` OR cities.name_fr LIKE '%${city.trim()}%'`
+    if (cities.length > 0) {
+      for (const city of cities) {
+        cities_list += `cities.name_nl LIKE '%${city.trim()}%' AND `
+        cities_list += `cities.name_fr LIKE '%${city.trim()}%' AND `
+      }
     }
     return cities_list
   }
 
-  separateTypologies (typologies: string[]): string {
-    let typologies_list = ''
-    for (const typology of typologies) {
-      typologies_list += ` OR typologies.name_nl LIKE '%${typology.trim()}%'`
-      typologies_list += ` OR typologies.name_fr LIKE '%${typology.trim()}%'`
+  separateIntervenants (intervenants: string[]): string {
+    let intervenants_list = ''
+    if (intervenants.length > 0) {
+      for (const intervenant of intervenants) {
+        intervenants_list += `intervenants.name LIKE '%${intervenant.trim()}%' AND `
+      }
     }
-    return typologies_list
+    return intervenants_list
   }
 
   separateStyles (styles: string[]): string {
     let styles_list = ''
-    for (const style of styles) {
-      styles_list += ` OR styles.name_nl LIKE '%${style.trim()}%'`
-      styles_list += ` OR styles.name_fr LIKE '%${style.trim()}%'`
+    if (styles.length > 0) {
+      for (const style of styles) {
+        styles_list += `styles.name_nl LIKE '%${style.trim()}%' AND `
+        styles_list += `styles.name_fr LIKE '%${style.trim()}%' AND `
+      }
     }
     return styles_list
   }
 
   separateStreets (streets: string[]): string {
     let streets_list = ''
-    for (const street of streets) {
-      streets_list += ` OR streets.name_nl LIKE '%${street.trim()}%'`
-      streets_list += ` OR streets.name_fr LIKE '%${street.trim()}%'`
+    if (streets.length > 0) {
+      for (const street of streets) {
+        streets_list += `streets.name_nl LIKE '%${street.trim()}%' AND `
+        streets_list += `streets.name_fr LIKE '%${street.trim()}%' AND `
+      }
     }
     return streets_list
   }
 
+  separateTypologies (typologies: string[]): string {
+    let typologies_list = ''
+    if (typologies.length > 0) {
+      for (const typology of typologies) {
+        typologies_list += `typologies.name_nl LIKE '%${typology.trim()}%' AND `
+        typologies_list += `typologies.name_fr LIKE '%${typology.trim()}%' AND `
+      }
+    }
+    return typologies_list
+  }
+
+  separateZipCodes (zipCodes: string[]): string {
+    let zipCodes_list = ''
+    if (zipCodes.length > 0) {
+      for (const zipCode of zipCodes) {
+        zipCodes_list += `cities.zip_code LIKE '${zipCode.trim()}' AND `
+      }
+    }
+    return zipCodes_list
+  }
+
   Handle (command: Request): Response {
-    if (command.strict) {
-      console.log("strict mode is true, still has to be implemented")
-    } else {
-      this.stmt_features = Cache.context.prepare(`
-      SELECT 
+    this.stmt_features = Cache.context.prepare(`
+       SELECT 
         buildings.name_${command.lang} AS name,
         buildings.image AS image,
         buildings.gps_lon AS lon,
@@ -105,18 +121,18 @@ export class Search implements ICommandHandler<Request, Response> {
       LEFT JOIN buildings_typologies ON buildings.uuid = buildings_typologies.building_id
       LEFT JOIN typologies ON buildings_typologies.typology_id = typologies.uuid
       WHERE 
-        cities.zip_code LIKE ?
-        ${this.separateCities(command.cities)}
-        ${this.separateTypologies(command.typologies)}
-        ${this.separateIntervenants(command.intervenants)}
-        ${this.separateStyles(command.styles)}
-        ${this.separateStreets(command.streets)}
+        ${(this.separateCities(command.cities) +
+          this.separateIntervenants(command.intervenants) +
+          this.separateTypologies(command.typologies) +
+          this.separateStyles(command.styles) +
+          this.separateStreets(command.streets) +
+          this.separateZipCodes(command.zipcodes)).replace(/\s*AND\s*$/m, ' ')
+        }
       GROUP BY 
         buildings_intervenants.building_id
     `)
-    }
 
-    const result = this.stmt_features.all(command.zipcode).map((f: { [x: string]: never; }) => {
+    const result = this.stmt_features.all().map((f: { [x: string]: never; }) => {
       const intervenants = '' + f['intervenants']
       return ({
         geometry: {
