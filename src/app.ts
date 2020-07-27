@@ -25,6 +25,13 @@ app.use(function (request, _response, next) {
       request.query.lang = 'fr'
     }
   }
+  if (typeof request.body.lang !== 'string' || !request.body.lang.match(/^(fr|nl)$/)) {
+    if (request.headers['accept-language'] && request.headers['accept-language'].match(/nl/)) {
+      request.body.lang = 'nl'
+    } else {
+      request.body.lang = 'fr'
+    }
+  }
   next()
 })
 
