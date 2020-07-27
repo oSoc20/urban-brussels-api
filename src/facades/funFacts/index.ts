@@ -34,7 +34,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
     const facts = new Map<string, string>()
 
     do {
-      const rand = Math.floor(Math.random() * 6) // 5 = nb kind(case) facts
+      const rand = Math.floor(Math.random() * 7) // 7 = nb kind(case) facts
       switch (rand) {
         case 0: {
           const stmt = Cache.context.prepare(`
@@ -232,6 +232,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           facts.set('4_' + row.uuid, fact)
           break
         }
+        // Fun fact for the oldest building in the database
         case 5: {
           const stmt = Cache.context.prepare(`
             SELECT
@@ -248,7 +249,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
               buildings_intervenants.building_id,
               buildings_intervenants.start_year
             ORDER BY
-              buildings_intervenants.start_year
+              buildings_intervenants.start_year ASC
             LIMIT 1
           `)
           const row = stmt.get()
@@ -261,6 +262,27 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.buildings_name}</span>`)
           fact = fact.replace('{1}', row.start_year)
           facts.set('5_' + row.uuid, fact)
+          break
+        }
+        // Fun fact for the number of different styles
+        case 6: {
+          const stmt = Cache.context.prepare(`
+            SELECT
+              COUNT(DISTINCT name_${command.lang}) AS styles_count
+            FROM
+              styles
+            ORDER BY
+              name_fr ASC
+          `)
+          const row = stmt.get()
+          if (facts.has('6_' + row.uuid)) {
+            continue
+          }
+          let fact = command.lang === 'fr'
+              ? `Saviez-vous qu'il y existe {0} styles architecturaux différents ?`
+              : `Wist u dat er {0} verschillende architecturale stijlen zijn?`
+          fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.styles_count}</span>`)
+          facts.set('6_' + row.uuid, fact)
           break
         }
         default:
