@@ -62,15 +62,15 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
 
   #### Result
 
-  | type | member | member type | description |
-  |------|--------|-------------|-------------|
-  | JSON | lang   | string      | Language of the result |
-  |      | zipCodes | array     | List of zip codes <u>beginning</u> with the query |
-  |      | cities | array       | List of cities that contain the query |
-  |      | streets| array       | List of streets that contain the query |
-  |      | typos  | array       | List of typologies that contain the query |
-  |      | styles | array       | List of styles that contain the query |
-  |      | intervenants | array | List of architects that contain the query |
+  | type |    member    | member type | description |
+  |------|--------------|-------------|-------------|
+  | JSON | lang         | string      | Language of the result |
+  |      | zipCodes     | array       | List of zip codes <u>beginning</u> with the query |
+  |      | cities       | array       | List of cities that contain the query |
+  |      | streets      | array       | List of streets that contain the query |
+  |      | typos        | array       | List of typologies that contain the query |
+  |      | styles       | array       | List of styles that contain the query |
+  |      | intervenants | array       | List of architects that contain the query |
 
 
   ##### Example
@@ -115,31 +115,59 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
     POST https://api.urban-brussels.osoc.be/search
   ``` 
   
-  - Please note that `strict` must be set to `false` for the moment.
-  - The keys `cities`, `intervenants` (architects), `streets`, `styles` and `typologies` MUST all be an array.<br>
-  - When `strict` is set to `false`, all entries in the arrays will be valid filter. e.g.: upon filtering the intervenants, buildings either with 'Victor HORTA' OR 'mathieu' as intervenant(s) will be returned. The same functionality is applied to the other keys where an array is needed.<br>
+  - The keys `cities`, `intervenants` (architects), `streets`, `styles` and `typologies` MUST all be an **array of strings**.
+  - If you don't wish to search for either `cities`, `intervenants`, `streets`, `styles` or `typologies`, then this must be an empty array.
+  - If you don't wish to search for a zipcode, then this must an empty string `""`.
+  - `lang` has 2 possible values: `fr` and `nl`. If the value for this key is not passed on, `null`, or a value different from `fr` and `nl`, then the browser's language will be filled in for this value.
+  - Only 1 zipcode can be passed on in the request.
+  - The following filters will only retrieve buildings where the intervenants include 'horta' and the buildings are located in the city with zip code 1030.
+  
   Example with the following body:
   ```json
   {
       "lang": "fr",
-      "strict": false,
-      "zipcode": "",
-      "cities": ["Laken", "Anderlecht"],
-      "intervenants": ["Victor HORTA", "mathieu"],
+      "cities": [],
+      "intervenants": ["Horta"],
       "streets": [],
       "styles": [],
-      "typologies": ["villa"]
+      "typologies": [],
+      "zipcode": "1030"
   }
   ```
-  
-  If you want to use the command line, this should work for UNIX systems:
-  ```bash
-  curl --header "Content-Type: application/json" \
-    --request POST \
-    --data '{"lang": "fr","strict": false,"zipcode": "","cities": ["Laken", "Anderlecht"],"intervenants": ["Victor HORTA", "mathieu"],"streets": [],"styles": [],"typologies": ["villa"]}' \
-    http://localhost:9000/search
+
+  This will return the following buildings:
+  ```json
+    {
+        "lang": "fr",
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        4.38316263,
+                        50.85659668
+                    ]
+                },
+                "properties": {
+                    "name": "Œuvre nationale des Aveugles",
+                    "zip_code": "1030",
+                    "city": "Schaerbeek",
+                    "street": "Avenue Dailly",
+                    "number": "90",
+                    "url": "https://monument.heritage.brussels/fr/Schaerbeek/Avenue_Dailly/90/20669",
+                    "image": "https://monument.heritage.brussels/medias/buildings/10308061_0090_P01.jpg",
+                    "styles": "Éclectisme d'inspiration pittoresque",
+                    "typologies": "maison bourgeoise",
+                    "intervenants": [
+                        "Victor HORTA"
+                    ]
+                }
+            },
+            ...
+        ]
+    }
   ```
-  On Windows machines you should escape the " with a \ . It is preferable to use a tool like Postman in this case for usability.
   
   ### Random search
     
@@ -152,5 +180,38 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   
   ##### Example
   ```http request
-    GET https://api.urban-brussels.osoc.be/search/random?lang=fr&limit=3
+    GET https://api.urban-brussels.osoc.be/search/random?lang=fr&limit=1
   ``` 
+
+  This will return some random building(s):
+  ```json
+    {
+        "lang": "fr",
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        4.34695283,
+                        50.83124009
+                    ]
+                },
+                "properties": {
+                    "name": null,
+                    "zip_code": "1060",
+                    "city": "Saint-Gilles",
+                    "street": "Rue de la Victoire",
+                    "number": "41",
+                    "url": "https://monument.heritage.brussels/fr/Saint-Gilles/Rue_de_la_Victoire/41/8460",
+                    "image": "https://monument.heritage.brussels/medias/buildings/10601150_0041_P01.JPG",
+                    "styles": "Éclectisme",
+                    "typologies": "rez-de-chaussée commercial",
+                    "intervenants": [
+                        "Jean-Baptiste MAELSCHALCK"
+                    ]
+                }
+            }
+        ]
+    }
+  ```
