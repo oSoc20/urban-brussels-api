@@ -67,16 +67,16 @@ export class Autocomplete implements ICommandHandler<Request, Response> {
         (name_nl LIKE ?)
     `)
 
-    /* const stmt_typos = Cache.context.prepare(`
+    const stmt_typos = Cache.context.prepare(`
       SELECT
         uuid as id,
         name_${command.lang} as name
-      FROM streets
+      FROM typologies
       WHERE
         (name_fr LIKE ?)
           OR
         (name_nl LIKE ?)
-    `) */
+    `)
 
     const stmt_styles = Cache.context.prepare(`
       SELECT
@@ -103,7 +103,7 @@ export class Autocomplete implements ICommandHandler<Request, Response> {
       zipCodes: stmt_zipCodes.all(command.query + '%'),
       cities: stmt_cities.all(likeQuery, likeQuery),
       streets: stmt_streets.all(likeQuery, likeQuery),
-      typos: [], // todo : requiert to parse typos
+      typos: stmt_typos.all(likeQuery, likeQuery),
       styles: stmt_styles.all(likeQuery, likeQuery),
       intervenants: stmt_inters.all(likeQuery)
     } as Response
