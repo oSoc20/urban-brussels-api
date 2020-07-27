@@ -9,7 +9,7 @@ export interface Request {
   typologies: string[];
   styles: string[];
   streets: string[];
-  zipcodes: string[];
+  zipcode: string;
 }
 
 interface Result {
@@ -32,6 +32,10 @@ export class Search implements ICommandHandler<Request, Response> {
   private stmt_features: any;
   public static get Type (): string { return 'Search' }
 
+  /*
+    Make a separate SQL WHERE clause for each city in the JSON request, in both languages
+    This will only be done if there is at least one city in the JSON request
+   */
   separateCities (cities: string[]): string {
     let cities_list = ''
     if (cities.length > 0) {
@@ -43,6 +47,10 @@ export class Search implements ICommandHandler<Request, Response> {
     return cities_list
   }
 
+  /*
+    Make a separate SQL WHERE clause for each intervenant in the JSON request
+    This will only be done if there is at least one intervenant in the JSON request
+   */
   separateIntervenants (intervenants: string[]): string {
     let intervenants_list = ''
     if (intervenants.length > 0) {
@@ -53,6 +61,10 @@ export class Search implements ICommandHandler<Request, Response> {
     return intervenants_list
   }
 
+  /*
+    Make a separate SQL WHERE clause for each style in the JSON request, in both languages
+    This will only be done if there is at least one style in the JSON request
+   */
   separateStyles (styles: string[]): string {
     let styles_list = ''
     if (styles.length > 0) {
@@ -64,6 +76,10 @@ export class Search implements ICommandHandler<Request, Response> {
     return styles_list
   }
 
+  /*
+    Make a separate SQL WHERE clause for each street in the JSON request, in both languages
+    This will only be done if there is at least one street in the JSON request
+   */
   separateStreets (streets: string[]): string {
     let streets_list = ''
     if (streets.length > 0) {
@@ -75,6 +91,10 @@ export class Search implements ICommandHandler<Request, Response> {
     return streets_list
   }
 
+  /*
+    Make a separate SQL WHERE clause for each typology in the JSON request, in both languages
+    This will only be done if there is at least one typology in the JSON request
+   */
   separateTypologies (typologies: string[]): string {
     let typologies_list = ''
     if (typologies.length > 0) {
@@ -86,12 +106,14 @@ export class Search implements ICommandHandler<Request, Response> {
     return typologies_list
   }
 
-  separateZipCodes (zipCodes: string[]): string {
+  /*
+    Inject the zipCode that was passed on in the JSON request
+   */
+  injectZipCode (zipCode: string): string {
     let zipCodes_list = ''
-    if (zipCodes.length > 0) {
-      for (const zipCode of zipCodes) {
-        zipCodes_list += `cities.zip_code LIKE '${zipCode.trim()}' AND `
-      }
+    // Check for the zipcode being a valid zipcode in Brussels. The valid interval is [1000;1299]
+    if (zipCode.match(/(1[01][0-9]{2}|12[0-8][0-9]|129[0-9])/)) {
+      zipCodes_list += `cities.zip_code LIKE '${zipCode.trim()}' AND `
     }
     return zipCodes_list
   }
@@ -126,7 +148,7 @@ export class Search implements ICommandHandler<Request, Response> {
           this.separateTypologies(command.typologies) +
           this.separateStyles(command.styles) +
           this.separateStreets(command.streets) +
-          this.separateZipCodes(command.zipcodes)).replace(/\s*AND\s*$/m, ' ')
+          this.injectZipCode(command.zipcode)).replace(/\s*AND\s*$/m, ' ') // Remove the last 'AND' from the query to make this a valid SQL query
         }
       GROUP BY 
         buildings_intervenants.building_id
