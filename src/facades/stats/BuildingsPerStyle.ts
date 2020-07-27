@@ -63,7 +63,7 @@ export class BuildingsPerStyle implements ICommandHandler<Request, Response> {
       LEFT JOIN
         intervenants
         ON (intervenants.uuid = buildings_intervenants.intervenant_id)
-        -- clauses
+      -- clauses
       WHERE
         1
         ${command.zipcodes.length > 0 ? `AND (cities.zip_code IN ${toSQLArray(command.zipcodes)})` : ''}
