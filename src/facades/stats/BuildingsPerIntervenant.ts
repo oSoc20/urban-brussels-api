@@ -5,7 +5,7 @@ import AppError from '../../errors/AppError'
 
 export interface Request {
   lang: 'fr' | 'nl';
-  zipcode: string[];
+  zipcodes: string[];
   cities: string[];
   streets: string[];
   styles: string[];
@@ -19,7 +19,7 @@ export class BuildingsPerIntervenant implements ICommandHandler<Request, Respons
   public static get Type (): string { return 'BuildingsPerIntervenant' }
 
   Validate (cmd: Request): Request {
-    if (!(cmd.zipcode instanceof Array && cmd.cities instanceof Array && cmd.streets instanceof Array &&
+    if (!(cmd.zipcodes instanceof Array && cmd.cities instanceof Array && cmd.streets instanceof Array &&
       cmd.styles instanceof Array && cmd.typologies instanceof Array)) {
       throw new AppError(400, 'All fields must be specified')
     }
@@ -64,7 +64,7 @@ export class BuildingsPerIntervenant implements ICommandHandler<Request, Respons
       -- clauses
       WHERE
         1
-        ${command.zipcode.length > 0 ? `AND (cities.zip_code IN ${toSQLArray(command.zipcode)})` : ''}
+        ${command.zipcodes.length > 0 ? `AND (cities.zip_code IN ${toSQLArray(command.zipcodes)})` : ''}
         ${command.cities.length > 0 ? `AND (UPPER(cities.name_fr) IN ${toSQLArray(command.cities, true)} OR UPPER(cities.name_nl) IN ${toSQLArray(command.cities, true)})` : ''}
         ${command.streets.length > 0 ? `AND (UPPER(streets.name_fr) IN ${toSQLArray(command.streets, true)} OR UPPER(streets.name_nl) IN ${toSQLArray(command.streets, true)})` : ''}
         ${command.styles.length > 0 ? `AND (UPPER(styles.name_fr) IN ${toSQLArray(command.styles, true)} OR UPPER(styles.name_nl) IN ${toSQLArray(command.styles, true)})` : ''}
