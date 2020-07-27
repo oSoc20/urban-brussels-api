@@ -11,6 +11,6 @@ export default function errorHandler (error: AppError, _request: Request, respon
   }
 
   console.error('Error:', error.message || 'no message')
-  response.status(status).json(new AppError(status, message))
+  response.status(status).json({status, message})
   // response.render('error', { error: new AppError(status, message) })
 }
