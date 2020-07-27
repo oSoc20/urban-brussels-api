@@ -1,6 +1,7 @@
 import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../utils/GISCache'
 import {Feature, FeatureCollection, Point} from "geojson";
+import { Statement } from 'better-sqlite3';
 
 export interface Request {
   lang: 'fr' | 'nl';
@@ -29,7 +30,7 @@ export interface Response extends FeatureCollection<Point, Result> //  extends B
 
 @Handler(Search.Type)
 export class Search implements ICommandHandler<Request, Response> {
-  private stmt_features: any;
+  private stmt_features!: Statement;
   public static get Type (): string { return 'Search' }
 
   /*
