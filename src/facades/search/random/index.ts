@@ -29,6 +29,7 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
     return 'SearchRandom'
   }
 
+  // Validate that the limit of buildings is a number
   Validate (request: Request): void {
     if (isNaN(request.limit)) {
       throw new AppError(400, "Expecting an amount")
@@ -36,7 +37,6 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
   }
 
   Handle (command: Request): Response {
-    console.log(command)
     const stmt_facts = Cache.context.prepare(`
         SELECT 
           buildings.name_${command.lang} AS name,
@@ -65,9 +65,10 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
         ORDER BY random()
         LIMIT ?
       `)
-    
+
+    // The command.limit parameter here will be injected in the SQL LIMIT clause here above
     const result = stmt_facts.all(command.limit).map(b => {
-      const intervenants = '' + b['intervenants']
+      const intervenants = '' + b['intervenants'] //
       return {
         geometry: {
           type: 'Point',
@@ -77,12 +78,12 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
           ]
         },
         properties: {
-          name: b['name'],
+          name: b['name'], // Name of the building
           zip_code: b['zip_code'],
           city: b['city'],
           street: b['street'],
           number: b['building_number'],
-          url: b['url'],
+          url: b['url'], // URL of the building in the Brussels patrimony website
           image: b['image'],
           styles: b['styles'],
           typologies: b['typology'],
@@ -92,7 +93,7 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
     })
 
     return {
-      lang: command.lang,
+      lang: command.lang, //The requested return language of the results
       type: 'FeatureCollection',
       features: result
     } as Response
