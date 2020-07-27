@@ -23,8 +23,8 @@ export class FunFacts implements ICommandHandler<Request, Response> {
     } else if (!request.limit) {
       request.limit = 10 // default limit
     }
-    if (request.limit > 20) {
-      throw new AppError(400, "The limit must not exceed 20")
+    if (request.limit > 50) {
+      throw new AppError(400, "The limit must not exceed 50")
     }
   }
 
@@ -174,8 +174,8 @@ export class FunFacts implements ICommandHandler<Request, Response> {
             continue
           }
           const fact = command.lang === 'fr'
-            ? 'Saviez-vous que ce site a été réalisé dans le cadre de l\'<a href="//summerofcode.be" target="blank">Open Summer Of Code</a>, visant à promouvoir l\'open souce?'
-            : 'Wist u dat deze site is gemaakt als onderdeel van de <a href="//summerofcode.be" target="blank">Open Summer Of Code</a> ter bevordering van open souce?'
+            ? 'Saviez-vous que ce site a été réalisé dans le cadre de l\'<a href="//summerofcode.be" target="blank">Open Summer Of Code</a>, visant à promouvoir l\'open source?'
+            : 'Wist u dat deze site is gemaakt als onderdeel van de <a href="//summerofcode.be" target="blank">Open Summer Of Code</a> ter bevordering van open source?'
           facts.set('3', fact)
           break
         }
