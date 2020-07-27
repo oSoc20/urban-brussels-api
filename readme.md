@@ -106,9 +106,9 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   
   #### Request
   
-  | METHOD | Endpoint | Body |
-  |--------|----------|--------|
-  | **POST** | /search | JSON data (see example)  |
+  |  METHOD  | Endpoint  |  Body  |
+  |----------|-----------|--------|
+  | **POST** |  /search  | JSON data (see example) |
 
   ##### Example
   ```http request
@@ -116,9 +116,10 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   ``` 
   
   - The keys `cities`, `intervenants` (architects), `streets`, `styles` and `typologies` MUST all be an **array of strings**.
-  - If you don't wish to search for either `cities`, `intervenants`, `streets`, `styles` or `typologies`, then this must be an empty array.
+  - `zipcode` MUST be a string.
+  - If you don't wish to search for either `cities`, `intervenants`, `streets`, `styles` or `typologies`, then this must be an empty array `[]`.
   - If you don't wish to search for a zipcode, then this must an empty string `""`.
-  - `lang` has 2 possible values: `fr` and `nl`. If the value for this key is not passed on, `null`, or a value different from `fr` and `nl`, then the browser's language will be filled in for this value.
+  - `lang` has 2 possible values: `fr` and `nl`. If the value for this key is either not passed on, `null`, or a value different from `fr` and `nl`, then the browser's language will be filled in for this value.
   - Only 1 zipcode can be passed on in the request.
   - The following filters will only retrieve buildings where the intervenants include 'horta' and the buildings are located in the city with zip code 1030.
   
