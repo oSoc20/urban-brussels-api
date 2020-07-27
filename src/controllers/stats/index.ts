@@ -21,4 +21,22 @@ controller.post('/', async function(request: Request, response: Response, next: 
   }
 })
 
+// GET <controller>/
+controller.get('/', async function(request: Request, response: Response, next: NextFunction) {
+  try {
+    const result = mediator.Send(GlobalStats.Type, {
+      lang: request.body.lang,
+      zipcodes: [],
+      cities: [],
+      styles: [],
+      streets: [],
+      intervenants: [],
+      typologies: []
+    })
+    response.json(result)
+  } catch (e) {
+    next(e)
+  }
+})
+
 export default controller
