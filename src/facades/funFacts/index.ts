@@ -4,7 +4,7 @@ import AppError from '../../errors/AppError'
 
 const DEFAULT_LIMIT = 10
 const MAX_LIMIT = 50
-const NUMBER_OF_FACTS = 9  // = nb kind of facts
+const NUMBER_OF_FACTS = 10  // = nb kind of facts
 
 export interface Request {
   lang: 'fr' | 'nl';
@@ -347,6 +347,26 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           fact = fact.replace('{0}', row.intervenant_count)
           fact = fact.replace('{1}', row.building_name)
           facts.set('8_' + row.uuid, fact)
+          break
+        }
+        // Fun fact for the number of different intervenants
+        case 9: {
+          const stmt = Cache.context.prepare(`
+            SELECT
+              COUNT(*) AS intervenant_count
+            FROM
+              intervenants
+          `)
+          const row = stmt.get()
+          if (facts.has('9_' + row.uuid)) {
+            continue
+          }
+          let fact = command.lang === 'fr'
+              ? `Saviez-vous qu'il existe {0} intervernants différents ?`
+              : `Wist u dat er {0} verschillende bijdragers zijn voor de gebouwen enz.?`
+          fact = fact.replace('{0}', row.intervenant_count)
+          fact = fact.replace('{1}', row.building_name)
+          facts.set('9_' + row.uuid, fact)
           break
         }
         default:
