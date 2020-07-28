@@ -285,7 +285,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           facts.set('6_' + row.uuid, fact)
           break
         }
-        // Fun fact for unique number of types
+        // Fun fact for the number of different typologies
         case 7: {
           const stmt = Cache.context.prepare(`
             SELECT
