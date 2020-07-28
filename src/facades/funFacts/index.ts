@@ -76,7 +76,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           let fact = command.lang === 'fr'
             ? `Saviez-vous que l'immeuble {0} appartient à {1} styles: {2} et {3}.`
             : `Wist je dat het gebouw {0} {1} verschillende stijlen heeft, waaronder: {2} en {3}.`
-          fact = fact.replace('{0}', `<span class="tag tag--type tag--small tag--no-margin">${row.building}</span>`)
+          fact = fact.replace('{0}', row.building)
           fact = fact.replace('{1}', row.styles_counter)
           fact = fact.replace('{2}', styles.join(', '))
           fact = fact.replace('{3}', lastStyle)
@@ -123,7 +123,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           let fact = command.lang === 'fr'
             ? `Saviez-vous que l'immeuble {0} posséde {1} typologies: {2} et {3}.`
             : `Wist je dat het gebouw {0} de volgende typologieën heeft: {2} en {3}.`
-          fact = fact.replace('{0}', `<span class="tag tag--style tag--small tag--no-margin">${row.building}</span>`)
+          fact = fact.replace('{0}', row.building)
           fact = fact.replace('{1}', row.typos_counter)
           fact = fact.replace('{2}', typos.join(', '))
           fact = fact.replace('{3}', lastStyle)
@@ -164,7 +164,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           let fact = command.lang === 'fr'
             ? `Saviez-vous que l'immeuble {0} date de {1}, ce qui en fait l'un des plus ancien batiment de Bruxelles.`
             : `Wist u dat het gebouw {0} dateert van {1}, waardoor het één van de oudste gebouwen in Brussel is.`
-          fact = fact.replace('{0}', `<span class="tag tag--style tag--small tag--no-margin">${row.building}</span>`)
+          fact = fact.replace('{0}', row.building)
           fact = fact.replace('{1}', row.year)
           facts.set('2_' + row.uuid, fact)
           break
@@ -259,7 +259,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           let fact = command.lang === 'fr'
               ? `Saviez-vous que le bâtiment {0} est le plus vieux référencé? Il date de {1}.`
               : `Wist u dat het gebouw {0} het oudste is en dateert van {1}?`
-          fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.buildings_name}</span>`)
+          fact = fact.replace('{0}', row.buildings_name)
           fact = fact.replace('{1}', row.start_year)
           facts.set('5_' + row.uuid, fact)
           break
@@ -281,7 +281,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           let fact = command.lang === 'fr'
               ? `Saviez-vous qu'il y existe {0} styles architecturaux différents ?`
               : `Wist u dat er {0} verschillende architecturale stijlen zijn?`
-          fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.styles_count}</span>`)
+          fact = fact.replace('{0}', `<span class="tag tag--style tag--small tag--no-margin">${row.styles_count}</span>`)
           facts.set('6_' + row.uuid, fact)
           break
         }
@@ -300,7 +300,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           let fact = command.lang === 'fr'
               ? `Saviez-vous qu'il y existe {0} typologies différentes ?`
               : `Wist u dat er {0} verschillende typologieën zijn?`
-          fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.typologies_count}</span>`)
+          fact = fact.replace('{0}', `<span class="tag tag--typology tag--small tag--no-margin">${row.typologies_count}</span>`)
           facts.set('7_' + row.uuid, fact)
           break
         }
@@ -342,7 +342,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
             buildingName = row.name_nl
           }
           fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.intervenant_count}</span>`)
-          fact = fact.replace('{1}', `<span class="tag tag--architect tag--small tag--no-margin"><a href="${urlLang}" target="_blank">${buildingName}</a></span>`)
+          fact = fact.replace('{1}', `<a href="${urlLang}" target="_blank">${buildingName}</a>`)
           facts.set('8_' + row.uuid, fact)
           break
         }
