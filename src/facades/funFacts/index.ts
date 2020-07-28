@@ -1,7 +1,6 @@
 import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../utils/GISCache'
 import AppError from '../../errors/AppError'
-import {url} from "inspector";
 
 export interface Request {
   lang: 'fr' | 'nl';
