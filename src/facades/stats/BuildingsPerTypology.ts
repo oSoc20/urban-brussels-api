@@ -14,6 +14,17 @@ export interface Request {
 
 export declare type Response = { [key: string]: number }
 
+/**
+ * The `BuildingsPerTypology` command counts the number of buildings by known typology
+ * and uses a filter similar to the `Search` command.
+ * 
+ * @remarks all fields must be given in an array, even if they are empty (e.g. `[]`)
+ * 
+ * @param {Request} command - request body with the `Search` filter: `lang`, `zipcodes`,
+ * `cities`, `streets`, `styles` & `intervenants`
+ * 
+ * @internal
+*/
 @Handler(BuildingsPerTypology.Type)
 export class BuildingsPerTypology implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'BuildingsPerTypology' }
@@ -74,11 +85,9 @@ export class BuildingsPerTypology implements ICommandHandler<Request, Response> 
       ORDER BY
         building_count DESC
     `)
-
     const response = {} as Response
 
     stmt.all().forEach(i => response[i.name] = i.building_count)
-
     return response
   }
 }

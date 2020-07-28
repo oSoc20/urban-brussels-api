@@ -26,6 +26,19 @@ export interface Response
 
 const mediator = new Mediator()
 
+
+/**
+ * The `GlobalStats` command generates statistics via several sub-commands with `Search` filters:
+ * `StylesPerCity`, `BuildingsPerIntervenant`, `BuildingsPerStyle`, `PredominantStylePerCity`,
+ * `PredominantStylePerIntervenant`, `BuildingsPerTypology` & `BuildingsPerYear`.
+ * 
+ * @remarks all fields must be given in an array, even if they are empty (e.g. `[]`)
+ * 
+ * @param {Request} command - request body with filters similar to the `Search` command
+ * @remarks note that `zip_codes` are also string arrays
+ * 
+ * @handle returns an object with the `Response` of all sub-commands
+ */
 @Handler(GlobalStats.Type)
 export class GlobalStats implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'GlobalStats' }

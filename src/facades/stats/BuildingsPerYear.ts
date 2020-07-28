@@ -15,6 +15,17 @@ export interface Request {
 
 export declare type Response = { [key: string]: number }
 
+/**
+ * The `BuildingsPerYear` command counts the number of buildings by year
+ * and uses a filter similar to the `Search` command.
+ * 
+ * @remarks all fields must be given in an array, even if they are empty (e.g. `[]`)
+ * 
+ * @param {Request} command - request body with the `Search` filter: `lang`, `zipcodes`,
+ * `cities`, `streets`, `styles`, `typologies` & `intervenants`
+ * 
+ * @internal
+*/
 @Handler(BuildingsPerYear.Type)
 export class BuildingsPerYear implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'BuildingsPerYear' }
@@ -76,11 +87,9 @@ export class BuildingsPerYear implements ICommandHandler<Request, Response> {
       ORDER BY
         buildings_intervenants.start_year ASC
     `)
-
     const response = {} as Response
 
     stmt.all().forEach(i => response[i.year] = i.building_count)
-
     return response
   }
 }

@@ -14,6 +14,17 @@ export interface Request {
 
 export declare type Response = { [key: string]: number }
 
+/**
+ * The `BuildingsPerIntervenant` command counts the number of buildings by known intervenant
+ * and uses a filter similar to the `Search` command.
+ * 
+ * @remarks all fields must be given in an array, even if they are empty (e.g. `[]`)
+ * 
+ * @param {Request} command - request body with the `Search` filter: `lang`, `zipcodes`,
+ * `cities`, `streets`, `styles` & `typologies`
+ * 
+ * @internal
+*/
 @Handler(BuildingsPerIntervenant.Type)
 export class BuildingsPerIntervenant implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'BuildingsPerIntervenant' }
@@ -74,11 +85,9 @@ export class BuildingsPerIntervenant implements ICommandHandler<Request, Respons
       ORDER BY
         building_count DESC
     `)
-
     const response = {} as Response
 
     stmt.all().forEach(i => response[i.name] = i.building_count)
-
     return response
   }
 }

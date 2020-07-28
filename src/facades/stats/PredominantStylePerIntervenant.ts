@@ -15,6 +15,17 @@ export interface Request {
 
 export declare type Response = []
 
+/**
+ * The `PredominantStylePerIntervenant` command determines the predominant style
+ * based on the know invtervenants.
+ * 
+ * @remarks all fields must be given in an array, even if they are empty (e.g. `[]`)
+ * 
+ * @param {Request} command - request body with the `Search` filter: `lang`, `zipcodes`,
+ * `cities`, `streets`, `typologies`, `styles` & `intervenants`
+ * 
+ * @internal
+*/
 @Handler(PredominantStylePerIntervenant.Type)
 export class PredominantStylePerIntervenant implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'PredominantStylePerIntervenant' }

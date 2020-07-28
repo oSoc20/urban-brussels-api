@@ -21,6 +21,17 @@ interface Result {
 
 export declare type Response = Result[]
 
+/**
+ * The `StylesPerCity` command counts the number of buildings by known style
+ * in each city and uses a filter similar to the `Search` command.
+ * 
+ * @remarks all fields must be given in an array, even if they are empty (e.g. `[]`)
+ * 
+ * @param {Request} command - request body with the `Search` filter: `lang`, `zipcodes`,
+ * `cities`, `streets`, `intervenants`, `styles` & `typologies`
+ * 
+ * @internal
+*/
 @Handler(StylesPerCity.Type)
 export class StylesPerCity implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'StylesPerCity' }
@@ -34,7 +45,6 @@ export class StylesPerCity implements ICommandHandler<Request, Response> {
   }
 
   Handle (command: Request): Response {
-
     const stmt = Cache.context.prepare(`
       SELECT
         cities.zip_code,
@@ -86,7 +96,6 @@ export class StylesPerCity implements ICommandHandler<Request, Response> {
       ORDER BY
         building_count DESC
     `)
-
     const tmp = new Map<string, Result>()
     stmt.all().forEach(s => {
       const entry = tmp.get(s['zip_code'])
@@ -101,7 +110,6 @@ export class StylesPerCity implements ICommandHandler<Request, Response> {
         entry.styles[s.style] = s.building_count
       }
     })
-
     return [...tmp.values()] as Response
   }
 }
