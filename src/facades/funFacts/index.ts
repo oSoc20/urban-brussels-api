@@ -296,7 +296,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           let fact = command.lang === 'fr'
               ? `Saviez-vous qu'il y existe {0} styles architecturaux différents ?`
               : `Wist u dat er {0} verschillende architecturale stijlen zijn?`
-          fact = fact.replace('{0}', `<span class="tag tag--style tag--small tag--no-margin">${row.styles_count}</span>`)
+          fact = fact.replace('{0}', row.styles_count)
           facts.set('6_' + row.uuid, fact)
           break
         }
@@ -315,7 +315,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           let fact = command.lang === 'fr'
               ? `Saviez-vous qu'il y existe {0} typologies différentes ?`
               : `Wist u dat er {0} verschillende typologieën zijn?`
-          fact = fact.replace('{0}', `<span class="tag tag--typology tag--small tag--no-margin">${row.typologies_count}</span>`)
+          fact = fact.replace('{0}', row.typologies_count)
           facts.set('7_' + row.uuid, fact)
           break
         }
@@ -356,7 +356,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
             urlLang = row.url_nl
             buildingName = row.name_nl
           }
-          fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.intervenant_count}</span>`)
+          fact = fact.replace('{0}', row.intervenant_count)
           fact = fact.replace('{1}', `<a href="${urlLang}" target="_blank">${buildingName}</a>`)
           facts.set('8_' + row.uuid, fact)
           break
