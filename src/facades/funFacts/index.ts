@@ -2,6 +2,10 @@ import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../utils/GISCache'
 import AppError from '../../errors/AppError'
 
+const DEFAULT_LIMIT = 10
+const MAX_LIMIT = 50
+const NUMBER_OF_FACTS = 9  // = nb kind of facts
+
 export interface Request {
   lang: 'fr' | 'nl';
   limit: number;
@@ -13,28 +17,39 @@ export interface Response
   facts: string[];
 }
 
+/**
+ * The `FunFacts` command generates a given number of "unique" fun facts
+ * 
+ * @remarks the limit/number must be between `0` and `MAX_LIMIT`
+ * 
+ * @param {Request} command - request body with members `lang` and `limit` (default: 10)
+ * 
+ * @handle returns an object with the `lang` and the `facts`
+*/
 @Handler(FunFacts.Type)
 export class FunFacts implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'FunFacts' }
 
   Validate (request: Request): void {
     if (request.limit && isNaN(request.limit)) {
-      throw new AppError(400, "Limit must be a number")
+      throw new AppError(400, 'Limit must be a number')
     } else if (!request.limit) {
-      request.limit = 10 // default limit
+      request.limit = DEFAULT_LIMIT
     }
-    if (request.limit > 50) {
-      throw new AppError(400, "The limit must not exceed 50")
+    if (request.limit < 1) {
+      throw new AppError(400, 'The limit must exceed 0')
+    }
+    if (request.limit > MAX_LIMIT) {
+      throw new AppError(400, 'The limit must not exceed ' + MAX_LIMIT)
     }
   }
 
 
   Handle (command: Request): Response {
-    const NUMBER_OF_FACTS = 9
     const facts = new Map<string, string>()
 
     do {
-      const rand = Math.floor(Math.random() * NUMBER_OF_FACTS) // 7 = nb kind(case) facts
+      const rand = Math.floor(Math.random() * NUMBER_OF_FACTS)
       switch (rand) {
         case 0: {
           const stmt = Cache.context.prepare(`
@@ -118,7 +133,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           if (facts.has('1_' + row.uuid)) {
             continue
           }
-          const typos = row.typologies.split('|').map((s: string) => `<span class="tag tag--style tag--small tag--no-margin">${s}</span>`)
+          const typos = row.typologies.split('|').map((s: string) => `<span class="tag tag--typology tag--small tag--no-margin">${s}</span>`)
           const lastStyle = typos.pop()
           let fact = command.lang === 'fr'
             ? `Saviez-vous que l'immeuble {0} posséde {1} typologies: {2} et {3}.`

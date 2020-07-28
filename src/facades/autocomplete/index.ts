@@ -7,6 +7,7 @@ export interface Request {
   query: string;
 }
 
+/** @internal */
 interface Result {
   id: string;
   name: string;
@@ -23,6 +24,16 @@ export interface Response
   intervenants: Result[];
 }
 
+/**
+ * The `Autocomplete` command looks for matches with a given word in the `query` in tables
+ * `cities` (name + zip code), `streets`, `typologies`, ` styles` and `intervenant`
+ * 
+ * @remarks the query must be a minimum of 2 characters long
+ * 
+ * @param {Request} command - request body with members `lang` and `query`
+ * 
+ * @handle returns an object with all of results
+*/
 @Handler(Autocomplete.Type)
 export class Autocomplete implements ICommandHandler<Request, Response> {
   public static get Type (): string { return 'Autocomplete' }
