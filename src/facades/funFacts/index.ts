@@ -1,6 +1,7 @@
 import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../utils/GISCache'
 import AppError from '../../errors/AppError'
+import {url} from "inspector";
 
 export interface Request {
   lang: 'fr' | 'nl';
@@ -30,11 +31,11 @@ export class FunFacts implements ICommandHandler<Request, Response> {
 
 
   Handle (command: Request): Response {
-
+    const NUMBER_OF_FACTS = 9
     const facts = new Map<string, string>()
 
     do {
-      const rand = Math.floor(Math.random() * 7) // 7 = nb kind(case) facts
+      const rand = Math.floor(Math.random() * NUMBER_OF_FACTS) // 7 = nb kind(case) facts
       switch (rand) {
         case 0: {
           const stmt = Cache.context.prepare(`
@@ -302,6 +303,48 @@ export class FunFacts implements ICommandHandler<Request, Response> {
               : `Wist u dat er {0} verschillende typologieën zijn?`
           fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.typologies_count}</span>`)
           facts.set('7_' + row.uuid, fact)
+          break
+        }
+        // Fun fact for the building with the highest number of intervenants
+        case 8: {
+          const stmt = Cache.context.prepare(`
+            SELECT
+              buildings.name_nl AS name_nl,
+              buildings.name_fr AS name_fr,
+              buildings.url_nl AS url_nl,
+              buildings.url_fr AS url_fr,
+              --GROUP_CONCAT(intervenants.name) as intervenant_list,
+              COUNT(buildings_intervenants.intervenant_id) as intervenant_count
+            FROM
+              buildings
+              LEFT JOIN buildings_intervenants ON (buildings_intervenants.building_id = buildings.uuid)
+              LEFT JOIN intervenants ON (intervenants.uuid = buildings_intervenants.intervenant_id)
+            GROUP BY
+              buildings_intervenants.building_id
+            ORDER BY
+              intervenant_count DESC
+            LIMIT 1
+          `)
+          const row = stmt.get()
+          if (facts.has('8_' + row.uuid)) {
+            continue
+          }
+
+          let fact
+          let urlLang
+          let buildingName
+          if (command.lang === 'fr') {
+            fact = `Saviez-vous qu'il y existe un bâtiment avec {0} intervenants ? C'est le bâtiment {1}.`
+            urlLang = row.url_fr
+            buildingName = row.name_fr
+          } else {
+            fact = `Wist u dat er een gebouw is met {0} verschillende bijdragers ? Dit gebouw is {1}.`
+            urlLang = row.url_nl
+            buildingName = row.name_nl
+          }
+          fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.intervenant_count}</span>`)
+          fact = fact.replace('{1}', `<span class="tag tag--architect tag--small tag--no-margin"><a href="${urlLang}" target="_blank">${buildingName}</a></span>`)
+          facts.set('8_' + row.uuid, fact)
           break
         }
         default:
