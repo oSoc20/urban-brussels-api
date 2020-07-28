@@ -98,6 +98,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           facts.set('0_' + row.uuid, fact)
           break
         }
+        // Display the different typologies for a random building
         case 1: {
           const stmt = Cache.context.prepare(`
             SELECT
@@ -323,10 +324,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
         case 8: {
           const stmt = Cache.context.prepare(`
             SELECT
-              buildings.name_nl AS name_nl,
-              buildings.name_fr AS name_fr,
-              buildings.url_nl AS url_nl,
-              buildings.url_fr AS url_fr,
+              buildings.name_${command.lang} AS building_name,
               --GROUP_CONCAT(intervenants.name) as intervenant_list,
               COUNT(buildings_intervenants.intervenant_id) as intervenant_count
             FROM
@@ -343,21 +341,11 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           if (facts.has('8_' + row.uuid)) {
             continue
           }
-
-          let fact
-          let urlLang
-          let buildingName
-          if (command.lang === 'fr') {
-            fact = `Saviez-vous qu'il y existe un bâtiment avec {0} intervenants ? C'est le bâtiment {1}.`
-            urlLang = row.url_fr
-            buildingName = row.name_fr
-          } else {
-            fact = `Wist u dat er een gebouw is met {0} verschillende bijdragers ? Dit gebouw is {1}.`
-            urlLang = row.url_nl
-            buildingName = row.name_nl
-          }
+          let fact = command.lang === 'fr'
+              ? `Saviez-vous qu'il y existe un bâtiment avec {0} intervenants ? C'est le bâtiment {1}.`
+              : `Wist u dat er een gebouw is met {0} verschillende bijdragers ? Dit gebouw is het {1}.`
           fact = fact.replace('{0}', row.intervenant_count)
-          fact = fact.replace('{1}', `<a href="${urlLang}" target="_blank">${buildingName}</a>`)
+          fact = fact.replace('{1}', row.building_name)
           facts.set('8_' + row.uuid, fact)
           break
         }
