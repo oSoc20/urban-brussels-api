@@ -285,6 +285,25 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           facts.set('6_' + row.uuid, fact)
           break
         }
+        // Fun fact for unique number of types
+        case 7: {
+          const stmt = Cache.context.prepare(`
+            SELECT
+              COUNT(*) AS typologies_count
+            FROM
+              typologies
+          `)
+          const row = stmt.get()
+          if (facts.has('7_' + row.uuid)) {
+            continue
+          }
+          let fact = command.lang === 'fr'
+              ? `Saviez-vous qu'il y existe {0} typologies différentes ?`
+              : `Wist u dat er {0} verschillende typologieën zijn?`
+          fact = fact.replace('{0}', `<span class="tag tag--architect tag--small tag--no-margin">${row.typologies_count}</span>`)
+          facts.set('7_' + row.uuid, fact)
+          break
+        }
         default:
           continue
       }
