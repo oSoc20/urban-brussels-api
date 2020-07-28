@@ -2,6 +2,7 @@ import { ICommandHandler, Handler } from 'tsmediator'
 import Cache from '../../utils/GISCache'
 import {Feature, FeatureCollection, Point} from "geojson";
 import { Statement } from 'better-sqlite3';
+import AppError from '../../errors/AppError';
 
 export interface Request {
   lang: 'fr' | 'nl';
@@ -33,6 +34,13 @@ export class Search implements ICommandHandler<Request, Response> {
   private stmt_features!: Statement;
   public static get Type (): string { return 'Search' }
 
+  Validate (request: Request): void {
+    if (!((request.cities instanceof Array) && (request.intervenants instanceof Array) && (request.streets instanceof Array) &&
+        (request.styles instanceof Array) && (request.typologies instanceof Array))) {
+      throw new AppError(400, 'Invalid JSON')
+    }
+  }
+
   /*
     Make a separate SQL WHERE clause for each city in the JSON request, in both languages
     This will only be done if there is at least one city in the JSON request
@@ -41,7 +49,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let cities_list = ''
     if (cities.length > 0) {
       for (const city of cities) {
-        cities_list += `cities.name_nl LIKE '%${city.trim()}%' OR cities.name_fr LIKE '%${city.trim()}%' AND `
+        cities_list += `(cities.name_nl LIKE '%${city.trim()}%' OR cities.name_fr LIKE '%${city.trim()}%') AND `
       }
     }
     return cities_list
@@ -55,7 +63,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let intervenants_list = ''
     if (intervenants.length > 0) {
       for (const intervenant of intervenants) {
-        intervenants_list += `intervenants.name LIKE '%${intervenant.trim()}%' AND `
+        intervenants_list += `(intervenants.name LIKE '%${intervenant.trim()}%') AND `
       }
     }
     return intervenants_list
@@ -69,7 +77,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let styles_list = ''
     if (styles.length > 0) {
       for (const style of styles) {
-        styles_list += `styles.name_nl LIKE '%${style.trim()}%' OR styles.name_fr LIKE '%${style.trim()}%' AND `
+        styles_list += `(styles.name_nl LIKE '%${style.trim()}%' OR styles.name_fr LIKE '%${style.trim()}%') AND `
       }
     }
     return styles_list
@@ -83,7 +91,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let streets_list = ''
     if (streets.length > 0) {
       for (const street of streets) {
-        streets_list += `streets.name_nl LIKE '%${street.trim()}%' OR streets.name_fr LIKE '%${street.trim()}%' AND `
+        streets_list += `(streets.name_nl LIKE '%${street.trim()}%' OR streets.name_fr LIKE '%${street.trim()}%') AND `
       }
     }
     return streets_list
@@ -97,7 +105,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let typologies_list = ''
     if (typologies.length > 0) {
       for (const typology of typologies) {
-        typologies_list += `typologies.name_nl LIKE '%${typology.trim()}%' OR typologies.name_fr LIKE '%${typology.trim()}%' AND `
+        typologies_list += `(typologies.name_nl LIKE '%${typology.trim()}%' OR typologies.name_fr LIKE '%${typology.trim()}%') AND `
       }
     }
     return typologies_list
