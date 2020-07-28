@@ -60,27 +60,6 @@ class GISService extends Service {
     }
 
     build (strict = true): string {
-      /* const tmp = new Array<string>()
-      Object.entries(this.params).forEach((key, value) => {
-        if (typeof value === 'string') {
-          tmp.push(`${ key }=${ escape(value) }`)
-        } else {
-          const props = Object.entries(value)
-          const conds = props.map(([key, value]): string => {
-            return value ? `${ key } = '${ escape(this.addSlashes('' + value)) }'` : ''
-          }).filter(s => s !== '')
-
-          if (props.length === 0)
-          {
-            return;
-          }
-
-          tmp.push(
-            `${ key }=${ conds.join(strict ? ' and ' : ' or ') }`
-          )
-        }
-      })
-      return '?' + tmp.join('&'); */
       const params = new URLSearchParams()
       Object.entries(this.params).forEach(([key, value]) => {
         if (typeof value === 'string') {
