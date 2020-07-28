@@ -90,7 +90,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           const lastStyle = styles.pop()
           let fact = command.lang === 'fr'
             ? `Saviez-vous que l'immeuble {0} appartient à {1} styles: {2} et {3}.`
-            : `Wist je dat het gebouw {0} {1} verschillende stijlen heeft, waaronder: {2} en {3}.`
+            : `Wist u dat het gebouw {0} {1} verschillende stijlen heeft, waaronder: {2} en {3}.`
           fact = fact.replace('{0}', row.building)
           fact = fact.replace('{1}', row.styles_counter)
           fact = fact.replace('{2}', styles.join(', '))
@@ -137,7 +137,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
           const lastStyle = typos.pop()
           let fact = command.lang === 'fr'
             ? `Saviez-vous que l'immeuble {0} posséde {1} typologies: {2} et {3}.`
-            : `Wist je dat het gebouw {0} de volgende typologieën heeft: {2} en {3}.`
+            : `Wist u dat het gebouw {0} de volgende typologieën heeft: {2} en {3}.`
           fact = fact.replace('{0}', row.building)
           fact = fact.replace('{1}', row.typos_counter)
           fact = fact.replace('{2}', typos.join(', '))
