@@ -58,13 +58,15 @@ export class Autocomplete implements ICommandHandler<Request, Response> {
 
     const stmt_streets = Cache.context.prepare(`
       SELECT
-        uuid as id,
+        GROUP_CONCAT(uuid, '|') as id,
         name_${command.lang} as name
       FROM streets
       WHERE
         (name_fr LIKE ?)
           OR
         (name_nl LIKE ?)
+      GROUP BY
+        name
     `)
 
     const stmt_typos = Cache.context.prepare(`
