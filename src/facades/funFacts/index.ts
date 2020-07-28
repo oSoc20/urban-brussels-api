@@ -313,7 +313,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
             continue
           }
           let fact = command.lang === 'fr'
-              ? `Saviez-vous qu'il y existe {0} typologies différentes ?`
+              ? `Saviez-vous qu'il existe {0} typologies différentes ?`
               : `Wist u dat er {0} verschillende typologieën zijn?`
           fact = fact.replace('{0}', row.typologies_count)
           facts.set('7_' + row.uuid, fact)
