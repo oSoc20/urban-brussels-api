@@ -41,8 +41,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let cities_list = ''
     if (cities.length > 0) {
       for (const city of cities) {
-        cities_list += `cities.name_nl LIKE '%${city.trim()}%' AND `
-        cities_list += `cities.name_fr LIKE '%${city.trim()}%' AND `
+        cities_list += `cities.name_nl LIKE '%${city.trim()}%' OR cities.name_fr LIKE '%${city.trim()}%' AND `
       }
     }
     return cities_list
@@ -70,8 +69,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let styles_list = ''
     if (styles.length > 0) {
       for (const style of styles) {
-        styles_list += `styles.name_nl LIKE '%${style.trim()}%' AND `
-        styles_list += `styles.name_fr LIKE '%${style.trim()}%' AND `
+        styles_list += `styles.name_nl LIKE '%${style.trim()}%' OR styles.name_fr LIKE '%${style.trim()}%' AND `
       }
     }
     return styles_list
@@ -85,8 +83,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let streets_list = ''
     if (streets.length > 0) {
       for (const street of streets) {
-        streets_list += `streets.name_nl LIKE '%${street.trim()}%' AND `
-        streets_list += `streets.name_fr LIKE '%${street.trim()}%' AND `
+        streets_list += `streets.name_nl LIKE '%${street.trim()}%' OR streets.name_fr LIKE '%${street.trim()}%' AND `
       }
     }
     return streets_list
@@ -100,8 +97,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let typologies_list = ''
     if (typologies.length > 0) {
       for (const typology of typologies) {
-        typologies_list += `typologies.name_nl LIKE '%${typology.trim()}%' AND `
-        typologies_list += `typologies.name_fr LIKE '%${typology.trim()}%' AND `
+        typologies_list += `typologies.name_nl LIKE '%${typology.trim()}%' OR typologies.name_fr LIKE '%${typology.trim()}%' AND `
       }
     }
     return typologies_list
@@ -114,7 +110,7 @@ export class Search implements ICommandHandler<Request, Response> {
     let zipCodes_list = ''
     // Check for the zipcode being a valid zipcode in Brussels. The valid interval is [1000;1299]
     if (zipCode.match(/(1[01][0-9]{2}|12[0-8][0-9]|129[0-9])/)) {
-      zipCodes_list += `cities.zip_code LIKE '${zipCode.trim()}' AND `
+      zipCodes_list += `cities.zip_code LIKE '%${zipCode.trim()}%' AND `
     }
     return zipCodes_list
   }
