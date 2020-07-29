@@ -204,7 +204,7 @@ export class FunFacts implements ICommandHandler<Request, Response> {
               SELECT
                 intervenants.name,
                 intervenants.uuid,
-                COUNT(buildings_intervenants.building_id) as buildings_count
+                COUNT(DISTINCT buildings_intervenants.building_id) as buildings_count
                 --,(
                 --	SELECT
                 --		COUNT(*)
