@@ -23,6 +23,15 @@ export interface Response extends FeatureCollection<Point, Result> {
   lang: 'fr' | 'nl';
 }
 
+/**
+ * The SearchRandom returns a list of random buildings.
+ *
+ * @param {Request} request - client request with `lang` and `limit` as parameters. `lang` can either be 'nl' or 'fr'. `limit` defines the number of buildings in the result.
+ *
+ * @handle returns an object with the `features` - a list of buildings with their properties.
+ *
+ * @internal
+ */
 @Handler(SearchRandom.Type)
 export class SearchRandom implements ICommandHandler<Request, Response> {
   public static get Type(): string {
@@ -51,13 +60,19 @@ export class SearchRandom implements ICommandHandler<Request, Response> {
         styles.name_${command.lang} AS styles,
         typologies.name_${command.lang} AS typology,
         GROUP_CONCAT(DISTINCT intervenants.name) AS intervenants
-      FROM buildings
+      FROM 
+        buildings
+        -- streets
         LEFT JOIN streets ON buildings.street_id = streets.uuid
+        -- cities
         LEFT JOIN cities ON streets.city_id = cities.uuid
+        -- intervenants
         LEFT JOIN buildings_intervenants ON buildings.uuid = buildings_intervenants.building_id
         LEFT JOIN intervenants ON buildings_intervenants.intervenant_id = intervenants.uuid
+        -- styles
         LEFT JOIN buildings_styles ON buildings.uuid = buildings_styles.building_id
         LEFT JOIN styles ON buildings_styles.style_id = styles.uuid
+        -- typologies
         LEFT JOIN buildings_typologies ON buildings.uuid = buildings_typologies.building_id
         LEFT JOIN typologies ON buildings_typologies.typology_id = typologies.uuid
       GROUP BY 
