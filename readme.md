@@ -44,7 +44,9 @@ npm run dev
 
 ## Using the API
 
-You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) or your internet browser (only for GET method)
+You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) or your internet browser (only for GET method).
+
+> **NOTE**:  if the `lang` parameter is not provided or is incorrect, the server will set it based on the field `Accept-Language` in the request header.
 
 <hr />
 
@@ -224,7 +226,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
 
   ### Statistics
 
-  This endpoint generates statistics about styles per city, buildings per intervenant, buildings per style, predominant style per city, predominant style per intervenant,b uildings per typology and buildings per year with `Search` filters.
+  This endpoint generates statistics about styles per city, buildings per intervenant, buildings per style, predominant style per city, predominant style per intervenant, buildings per typology and buildings per year with `Search` filters.
 
   #### Request
 
@@ -239,6 +241,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   |        |          | typologies[] | list of typology names in French and/or Dutch  |
   |**GET** | /stats   | lang   | specify the language that you want<br />value: `"fr"` or `"nl"` |
   > **NOTE**: the GET method only gets responses with a empty filter.
+  > Fields are case insensitive and zipcodes can be provided as a `number` and/or a `string`.
 
   ##### Example
   The following query gets the values where `"Victor Horta"` intervened and where zip code is `1000` (Brussel) or `1090` (Jette), and specifies that the result must be in `fr` (French).
@@ -271,6 +274,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   |      | BuildingsPerYear | object | number of buildings per year |
 
   ##### Example
+  result of the previous request
   ```json
   {
     "lang": "fr",
@@ -298,3 +302,41 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
     }
   }
   ```
+
+  <hr />
+  
+  ### Fun facts
+
+  This endpoint generates a given number of "unique" fun facts.
+
+  #### Request
+
+  | METHOD | endpoint | params | description |
+  |--------|----------|--------|-------------|
+  | **GET** | /funfacts | lang  | specify the language that you want<br />value: `"fr"` or `"nl"` |
+  |         |               | limit | *(Optional)* the number of facts you want <br />included betweend `1` and `50`. (dafault: `10`) |
+
+  ##### Example
+  ```http request
+    GET https://api.urban-brussels.osoc.be/funfacts?lang=fr&limit=1
+  ``` 
+  #### Response
+
+  | type |    member    | member type | description |
+  |------|--------------|-------------|-------------|
+  | JSON | lang         | string      | Language of the result |
+  |      | facts        | array       | List of fun facts |
+
+  ##### Example
+  ```json
+  {
+    "lang": "fr",
+    "facts": [
+      "Saviez-vous qu'il existe 143 typologies différentes ?"
+    ]
+  }
+  ```
+
+## TODOs
+- [ ] Use dedicated errors that inherit from `AppError` instead of using `AppError` directly;
+- [ ] Search/Statistics by year;
