@@ -28,6 +28,8 @@ export interface Response extends FeatureCollection<Point, Result> {
  *
  * @param {Request} request - client request with `lang` and `limit` as parameters. `lang` can either be 'nl' or 'fr'. `limit` defines the number of buildings in the result.
  *
+ * @handle returns an object with the `features` - a list of buildings with their properties.
+ *
  * @internal
  */
 @Handler(SearchRandom.Type)
