@@ -25,7 +25,7 @@ controller.post('/', async function(request: Request, response: Response, next: 
 controller.get('/', async function(request: Request, response: Response, next: NextFunction) {
   try {
     const result = mediator.Send(GlobalStats.Type, {
-      lang: request.body.lang,
+      lang: request.query.lang,
       zipcodes: [],
       cities: [],
       styles: [],
