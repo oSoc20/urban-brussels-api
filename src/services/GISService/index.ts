@@ -7,8 +7,14 @@ import { addSlashes } from '../../utils/functions'
 const URL_BASE = 'https://gis.urban.brussels/geoserver/ows'
 const DEFAULT_TYPENAME = 'BSO_DML_BESC:Inventaris_Irismonument'
 
+/**
+ * This service provides a bridge between the geojson proposed by Urban Brussels and this API.
+ * 
+ * @extends Service
+ */
 class GISService extends Service {
 
+  /** @internal */
   static ParamsBuilder = class {
     private params: Params
 
@@ -82,16 +88,23 @@ class GISService extends Service {
     }
   }
 
-  constructor () {
-    super(URL_BASE)
-  }
+  /** @constructor */
+  constructor () { super(URL_BASE) }
 
-
-  getInfoByFilters (filters: IrismonumentProperties, strict = true) {
+  /**
+   * Sends a request to the service with a filter.
+   * 
+   * @remarks the list can be found in the member `features`
+   * 
+   * @param {IrismonumentProperties} filters - use a property object as a filter
+   * @param {boolean} [strict] - indicates if all the conditions must be satisfied
+   * 
+   * @returns {Promise} returns the promise of a GISResult (geojson collection)
+   */
+  getInfoByFilters (filters: IrismonumentProperties, strict = true): Promise<GISResult> {
     return new Promise<GISResult>((resolve, reject) => {
       const params = new GISService.ParamsBuilder()
       params.setCQLFilter(filters)
-      // console.log(params.build(strict))
       this.axios.get<GISResult>(params.build(strict))
         .then(({ data }) => {
           resolve(data as GISResult)
@@ -100,7 +113,14 @@ class GISService extends Service {
     })
   }
 
-  getAll() {
+  /**
+   * retrieves all service responses without filtering 
+   * 
+   * @remarks the list can be found in the member `features`
+   * 
+   * @returns {Promise} returns the promise of a GISResult (geojson collection)
+   */
+  getAll(): Promise<GISResult> {
     return new Promise<GISResult>((resolve, reject) => {
     const params = new GISService.ParamsBuilder()
       console.log(params.build())
@@ -111,6 +131,6 @@ class GISService extends Service {
   }
 }
 
+// lazy singleton
 const _default = new GISService()
-
 export default _default
