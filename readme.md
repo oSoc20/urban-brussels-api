@@ -46,6 +46,8 @@ npm run dev
 
 You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) or your internet browser (only for GET method)
 
+<hr />
+
   ### Autocomplete
 
   #### Request
@@ -60,7 +62,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   GET https://api.urban-brussels.osoc.be/autocomplete?lang=nl&query=victor
   ```
 
-  #### Result
+  #### Response
 
   | type |    member    | member type | description |
   |------|--------------|-------------|-------------|
@@ -101,6 +103,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   ...
 }
   ```
+  <hr />
 
   ### Search
   
@@ -169,7 +172,8 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
         ]
     }
   ```
-  
+  <hr/>
+
   ### Random search
     
   #### Request
@@ -215,4 +219,82 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
             }
         ]
     }
+  ```
+  <hr />
+
+  ### Statistics
+
+  This endpoint generates statistics about styles per city, buildings per intervenant, buildings per style, predominant style per city, predominant style per intervenant,b uildings per typology and buildings per year with `Search` filters.
+
+  #### Request
+
+  | METHOD | endpoint | params | description |
+  |--------|----------|--------|-------------|
+  |**POST**| /stats   | lang   | specify the language that you want<br />value: `"fr"` or `"nl"` |
+  |        |          | zipcodes[] | list of zip code |
+  |        |          | cities[] | list of city names in French and/or Dutch |
+  |        |          | streets[] | list of street names in French and/or Dutch  |
+  |        |          | styles[] | list of style names in French and/or Dutch  |
+  |        |          | intervenants[] | list of "architects" names  |
+  |        |          | typologies[] | list of typology names in French and/or Dutch  |
+  |**GET** | /stats   | lang   | specify the language that you want<br />value: `"fr"` or `"nl"` |
+  > **NOTE**: the GET method only gets responses with a empty filter.
+
+  ##### Example
+  The following query gets the values where `"Victor Horta"` intervened and where zip code is `1000` (Brussel) or `1090` (Jette), and specifies that the result must be in `fr` (French).
+  ```http request
+  POST https://api.urban-brussels.osoc.be/stats
+  ```
+  ```json
+  {
+    "lang": "fr",
+    "cities": [],
+    "intervenants": ["Victor HoRtA"],
+    "streets": [],
+    "styles": [],
+    "typologies": [],
+    "zipcodes": ["1000", 1090]
+  }
+  ```
+
+  #### Response
+
+  | type |    member    | member type | description |
+  |------|--------------|-------------|-------------|
+  | JSON | lang         | string      | Language of the result |
+  |      | stylesPerCity | array | object list containing the `zipCode`, the name of the `city` and an object with all `styles` |
+  |      | BuildingsPerIntervenant | object | object listing the "architects" and their number of interventions |
+  |      | BuildingsPerStyle | object | object listing  styles and their frequency |
+  |      | PredominantStylePerCity | array | object list conteining the `zip_code`, the name of the `city`, the `style` name and this frequency (`style_count`) |
+  |      | PredominantStylePerIntervenant | array | object list conteining the `name` of the "architect", the `style` name and this frequency (`style_count`)  |
+  |      | BuildingsPerTypology | object | object listing  typologies and their frequency |
+  |      | BuildingsPerYear | object | number of buildings per year |
+
+  ##### Example
+  ```json
+  {
+    "lang": "fr",
+    "stylesPerCity": [],
+    "BuildingsPerIntervenant": {
+      "Victor HORTA": 14
+    },
+    "BuildingsPerStyle": {},
+    "PredominantStylePerCity": [],
+    "PredominantStylePerIntervenant": [],
+    "BuildingsPerTypology": {
+      "gare": 3,
+      "entrepôt/dépôt": 2,
+      "magasin": 1
+    },
+    "BuildingsPerYear": {
+      "1894": 1,
+      "1897": 1,
+      "1905": 1,
+      "1907": 2,
+      "1909": 1,
+      "1913": 2,
+      "1922": 3,
+      "1936": 3
+    }
+  }
   ```
