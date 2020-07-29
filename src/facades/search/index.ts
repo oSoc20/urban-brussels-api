@@ -36,6 +36,8 @@ export interface Response extends FeatureCollection<Point, Result> //  extends B
  *
  * @remarks The values for the keys `cities`, `intervenants`, `streets`, `styles` and `typologies` must an array of strings, even if they are empty (e.g. `[]`). `zipcode` must be a string, even if empty `""`, and match the interval [1000;1299].
  *
+ * @handle returns an object with the `features` - a list of buildings with their properties.
+ *
  * @internal
  *
  */
@@ -51,9 +53,12 @@ export class Search implements ICommandHandler<Request, Response> {
     }
   }
 
-  /*
-    Make a separate SQL WHERE clause for each city in the JSON request, in both languages
-    This will only be done if there is at least one city in the JSON request
+  /**
+   * Splits and makes a separate WHERE clause for each city (in both languages) in the client request if there's at least one city in the request.
+   *
+   * @param cities
+   *
+   * @internal
    */
   separateCities (cities: string[]): string {
     let cities_list = ''
@@ -65,9 +70,12 @@ export class Search implements ICommandHandler<Request, Response> {
     return cities_list
   }
 
-  /*
-    Make a separate SQL WHERE clause for each intervenant in the JSON request
-    This will only be done if there is at least one intervenant in the JSON request
+  /**
+   * Splits and makes a separate WHERE clause for each intervenant (in both languages) in the client request if there's at least one intervenant in the request.
+   *
+   * @param intervenants
+   *
+   * @internal
    */
   separateIntervenants (intervenants: string[]): string {
     let intervenants_list = ''
@@ -79,9 +87,12 @@ export class Search implements ICommandHandler<Request, Response> {
     return intervenants_list
   }
 
-  /*
-    Make a separate SQL WHERE clause for each style in the JSON request, in both languages
-    This will only be done if there is at least one style in the JSON request
+  /**
+   * Splits and makes a separate WHERE clause for each architectural style (in both languages) in the client request if there's at least one style in the request.
+   *
+   * @param styles
+   *
+   * @internal
    */
   separateStyles (styles: string[]): string {
     let styles_list = ''
@@ -93,9 +104,12 @@ export class Search implements ICommandHandler<Request, Response> {
     return styles_list
   }
 
-  /*
-    Make a separate SQL WHERE clause for each street in the JSON request, in both languages
-    This will only be done if there is at least one street in the JSON request
+  /**
+   * Splits and makes a separate WHERE clause for each street (in both languages) in the client request if there's at least one style in the request.
+   *
+   * @param streets
+   *
+   * @internal
    */
   separateStreets (streets: string[]): string {
     let streets_list = ''
@@ -107,9 +121,12 @@ export class Search implements ICommandHandler<Request, Response> {
     return streets_list
   }
 
-  /*
-    Make a separate SQL WHERE clause for each typology in the JSON request, in both languages
-    This will only be done if there is at least one typology in the JSON request
+  /**
+   * Splits and makes a separate WHERE clause for each typology (in both languages) in the client request if there's at least one typology in the request.
+   *
+   * @param typologies
+   *
+   * @internal
    */
   separateTypologies (typologies: string[]): string {
     let typologies_list = ''
@@ -121,12 +138,15 @@ export class Search implements ICommandHandler<Request, Response> {
     return typologies_list
   }
 
-  /*
-    Inject the zipCode that was passed on in the JSON request
+  /**
+   * Inject the zipCode that was passed on in the JSON request if it matches the interval [1000;1299].
+   *
+   * @param zipCode
+   *
+   * @internal
    */
   injectZipCode (zipCode: string): string {
     let zipCodes_list = ''
-    // Check for the zipcode being a valid zipcode in Brussels. The valid interval is [1000;1299]
     if (zipCode.match(/(1[01][0-9]{2}|12[0-8][0-9]|129[0-9])/)) {
       zipCodes_list += `cities.zip_code LIKE '%${zipCode.trim()}%' AND `
     }
