@@ -10,6 +10,7 @@ export interface Request {
   streets: string[];
   styles: string[];
   typologies: string[];
+  intervenants: string[];
 }
 
 export declare type Response = { [key: string]: number }
@@ -21,7 +22,7 @@ export declare type Response = { [key: string]: number }
  * @remarks all fields must be given in an array, even if they are empty (e.g. `[]`)
  * 
  * @param {Request} command - request body with the `Search` filter: `lang`, `zipcodes`,
- * `cities`, `streets`, `styles` & `typologies`
+ * `cities`, `streets`, `styles`, `intervenants` & `typologies`
  * 
  * @internal
 */
@@ -31,7 +32,7 @@ export class BuildingsPerIntervenant implements ICommandHandler<Request, Respons
 
   Validate (cmd: Request): Request {
     if (!(cmd.zipcodes instanceof Array && cmd.cities instanceof Array && cmd.streets instanceof Array &&
-      cmd.styles instanceof Array && cmd.typologies instanceof Array)) {
+      cmd.styles instanceof Array && cmd.typologies instanceof Array && cmd.intervenants instanceof Array)) {
       throw new AppError(400, 'All fields must be specified')
     }
     return cmd
@@ -80,6 +81,7 @@ export class BuildingsPerIntervenant implements ICommandHandler<Request, Respons
         ${command.streets.length > 0 ? `AND (UPPER(streets.name_fr) IN ${toSQLArray(command.streets, true)} OR UPPER(streets.name_nl) IN ${toSQLArray(command.streets, true)})` : ''}
         ${command.styles.length > 0 ? `AND (UPPER(styles.name_fr) IN ${toSQLArray(command.styles, true)} OR UPPER(styles.name_nl) IN ${toSQLArray(command.styles, true)})` : ''}
         ${command.typologies.length > 0 ? `AND (UPPER(typologies.name_fr) IN ${toSQLArray(command.typologies, true)} OR UPPER(typologies.name_nl) IN ${toSQLArray(command.typologies, true)})` : ''}
+        ${command.intervenants.length > 0 ? `AND (UPPER(intervenants.name) IN ${toSQLArray(command.intervenants, true)})` : ''}
       GROUP BY
         intervenants.uuid
       ORDER BY
