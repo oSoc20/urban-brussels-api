@@ -17,6 +17,7 @@ git clone https://github.com/oSoc20/urban-brussels-api.git
 
 
 ### Installing
+<small>*you can also read the `INSTALL.md` file.*</small>
 
 You just need to install the packages with the following command:
 ```sh
@@ -31,6 +32,11 @@ npm install -g esm
 ## Usage
 
 ### Starting server
+
+**FIRST**, apply the last migrations to generate the `cache.db` (it could take a few minutes):
+```sh
+npm run migrate
+```
 
 To recompile and start the server:
 ```sh
@@ -336,6 +342,17 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
     ]
   }
   ```
+
+## Migrations
+
+### Manually create a migration 
+  you can easily create a new migration by duplicating the `template_YYYYMMDDhhmm.sql` file and follow the steps:
+  * Rename the copy by giving it an explicit name and today's date. (e.g. if you rename an architect on the 30th July 2020 at 10:00 a.m. : `rename_architect_202007301000.sql`).
+  * Replace the dates also in the script (lines `2` and `7`).
+  * Replace `-- < insert queries here >` (line `4`) with your queries.
+  * Save and run migrations with `npm run migrate` command.
+
+> **NOTE**:To keep the database stable, avoid dates that are too far of the "present".
 
 ## TODOs
 - [ ] Use dedicated errors that inherit from `AppError` instead of using `AppError` directly;
