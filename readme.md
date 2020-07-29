@@ -314,7 +314,7 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
   | METHOD | endpoint | params | description |
   |--------|----------|--------|-------------|
   | **GET** | /funfacts | lang  | specify the language that you want<br />value: `"fr"` or `"nl"` |
-  |         |               | limit | *(Optional)* the number of facts you want <br />included betweend `1` and `50`. (dafault: `10`) |
+  |         |               | limit | *(Optional)* the number of facts you want <br />included between `1` and `50`. (dafault: `10`) |
 
   ##### Example
   ```http request
