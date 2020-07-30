@@ -41,7 +41,7 @@ class GISCache {
         this.compareAndMigrate()
         this.db
           .prepare('UPDATE params SET value = ? WHERE key = \'timestamp\' LIMIT 1')
-          // .run(now)
+          .run(now)
       } else {
         console.log('Cache is up to date')
       }
