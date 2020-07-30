@@ -122,8 +122,8 @@ class GISService extends Service {
    */
   getAll(): Promise<GISResult> {
     return new Promise<GISResult>((resolve, reject) => {
-    const params = new GISService.ParamsBuilder()
-      console.log(params.build())
+      const params = new GISService.ParamsBuilder()
+      // console.log(params.build())
       this.axios.get<GISResult>(params.build())
         .then(({ data }) => resolve(data))
         .catch(e => reject(e))
