@@ -357,3 +357,5 @@ You can use tools like [Postman](https://www.postman.com/), [Insomnia](https://i
 ## TODOs
 - [ ] Use dedicated errors that inherit from `AppError` instead of using `AppError` directly;
 - [ ] Search/Statistics by year;
+- [ ] Simplify GISCache and MigrationBuilder with generics;
+- [ ] Implement `UPDATE` and `DELETE` in addition to `INSERT` in migrations

@@ -2,24 +2,24 @@ interface Entity {
   uuid: string;
 }
 
-interface Nammed {
-  name_fr: string;
-  name_nl: string;
+interface Named {
+  nameFr: string;
+  nameNl: string;
 }
 
-export interface City extends Entity, Nammed {
+export interface City extends Entity, Named {
   zipCode?: string;
 }
 
-export interface Street extends Entity, Nammed {
-  city?: City;
+export interface Street extends Entity, Named {
+  city: City;
 }
 
-export interface Style extends Entity, Nammed {
+export interface Style extends Entity, Named {
   //
 }
 
-export interface Typology extends Entity, Nammed {
+export interface Typology extends Entity, Named {
   id?: string;
 }
 
@@ -27,10 +27,10 @@ export interface Intervenant extends Entity {
   name: string;
 }
 
-export interface Building extends Entity, Nammed {
+export interface Building extends Entity, Named {
   id?: number;
-  url_fr?: string;
-  url_nl?: string;
+  urlFr?: string;
+  urlNl?: string;
   idBatiCMS?: string;
   image?: string;
   street: Street;
@@ -40,4 +40,13 @@ export interface Building extends Entity, Nammed {
   intervenants?: Intervenant[];
   gpsLat?: number;
   gpsLon?: number;
+}
+
+export interface FlatBuildings {
+  cities: City[];
+  streets: Street[];
+  styles: Style[];
+  typologies: Typology[];
+  intervenants: Intervenant[];
+  buildings: Building[];
 }

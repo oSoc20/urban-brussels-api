@@ -1,57 +1,316 @@
-import sqlite3, { Database, RunResult } from 'better-sqlite3'
+import sqlite3, { Database } from 'better-sqlite3'
 import GISService from '../services/GISService'
-import { v4 as uuidv4 } from 'uuid'
-import { BuildingMulti, Intervenant as IntervenantAPI, TypologyMulti as TypologyAPI } from '@/types/Building'
-import { City, Street, Style, Typology, Intervenant, Building } from './types/CacheTypes'
+import { BuildingMulti, Intervenant as IntervenantAPI, TypologyMulti as TypologyAPI } from '..//types/Building'
+import { City, Street, Style, Typology, Intervenant, Building, FlatBuildings } from './types/CacheTypes'
+import MigrationBuilder from './MigrationBuilder'
+import { v4 as uuid } from 'uuid'
 
 const maxAge = 86400 * 7 // seconds
 
+/**
+ * class allowing the caching of GISService informations
+ */
 class GISCache {
   private readonly db: Database
 
   constructor () {
-    this.db = sqlite3('cache.db') 
-
-    this.initTables()
-    this.update()
+    this.db = sqlite3('cache.db')
+    setInterval(() => this.checkForUpdates(), maxAge)
+    this.checkForUpdates()
   }
 
+  /**
+   * public access to cache
+   */
   get context (): Database {
     return this.db
   }
 
-  async update () {
-    const record = this.db.prepare("SELECT value FROM params WHERE key = 'timestamp'").get()
-    const now = Math.round(+new Date() / 1000)
-
+  /**
+   * check if it is necessary to redo a capture according to the unix timestampin db and the `maxAge`
+   */
+  private checkForUpdates() {
     try {
-      if (!record || !record.value) {
-        console.log('creating cache...')
-        this.db.exec('INSERT INTO params ("key", value)VALUES(\'timestamp\', -1);')
-        this.repopulate(await this.getUpdatedData())
-        this.updateTimestamp()
-      } else if ( +record.value + maxAge < now) {
-          // const list = this.getUpdatedData()
-          // todo : check which data can be update
-          console.log('updating cache...')
-          this.updateTimestamp()
-      } else {
-        console.log('cache is up to date')
+      const record = this.db.prepare(`SELECT value as snapshot FROM params WHERE key = 'timestamp' LIMIT 1`).get()
+      const now = Math.round(+new Date() / 1000)
+      if (!record || isNaN(record.snapshot)) {
+        throw new Error('Cache.params[key="timestamp"] is not a number.')
       }
-
+      if (+record.snapshot + maxAge < now) {
+        console.log('Comparaison with the new version...')
+        this.compareAndMigrate()
+        this.db
+          .prepare('UPDATE params SET value = ? WHERE key = \'timestamp\' LIMIT 1')
+          // .run(now)
+      } else {
+        console.log('Cache is up to date')
+      }
     } catch (e) {
-      console.error('CacheUpdateError', e)
+      console.error('\x1b[31m**FATAL ERROR**: impossible to access the database marker, check the migrations.\x1b[0m')
+      if (e instanceof Error) {
+        console.error(e.stack)
+      }
+      process.exit(-1)
     }
-
   }
 
-  updateTimestamp () {
-    const now = Math.round(+new Date() / 1000)
-    this.db
-    .prepare('UPDATE params SET value = ? WHERE "key" = \'timestamp\' LIMIT 1')
-    .run(now)
+  /**
+   * looking for new informations to add
+   */
+  private async compareAndMigrate() {
+    const update = await this.getUpdatedData()
+    const current = this.getCurrentData()
+    const migration = new MigrationBuilder(current)
+
+    const kCities = {} as { [key: string]: City }
+    const kStreets = {} as { [key: string]: Street }
+    const kStyles = {} as { [key: string]: Style }
+    const kTypologies = {} as { [key: string]: Typology }
+    const kIntervenants = {} as { [key: string]: Intervenant }
+    const kBuilings = {} as { [key: string]: Building }
+
+    // todo : fix possible conflicts between `undefined` and `null` values
+    current.cities.forEach(c => { kCities[('k_' + c.zipCode).toLowerCase()] = c})
+    current.streets.forEach(s => { kStreets[('k_' + s.nameFr + s.nameNl + s.city.zipCode).toLowerCase()] = s})
+    current.styles.forEach(s => { kStyles[('k_' + s.nameFr + s.nameNl).toLowerCase()] = s})
+    current.typologies.forEach(t => { kTypologies[('k_' + t.id).toLowerCase()] = t})
+    current.intervenants.forEach(i => { kIntervenants[('k_' + i.name).toLowerCase()] = i})
+    current.buildings.forEach(b => { kBuilings[('k_' + b.idBatiCMS).toLowerCase()] = b})
+
+    const news = update.filter(b => !kBuilings[('k_' + b.idBatiCMS).toLowerCase()])
+    news.forEach(b => {
+      const city = (function (): City {
+        const key = ('k_' + b.zipCode).toLowerCase()
+        if (!kCities[key]) {
+          const city = {
+            uuid: uuid(),
+            nameFr: b.cityFR,
+            nameNl: b.cityNL,
+            zipCode: b.zipCode
+          } as City
+          kCities[key] = city
+          migration.insertCity(city)
+        }
+        return kCities[key]
+      })()
+
+      const street = (function (): Street {
+        const key = ('k_' + b.streetFR + b.streetNL + b.zipCode).toLowerCase()
+        if (!kStreets[key]) {
+          const street = {
+            uuid: uuid(),
+            nameFr: b.streetFR,
+            nameNl: b.streetNL,
+            city: city
+          } as Street
+          kStreets[key] = street
+          migration.insertStreet(street)
+        }
+        return kStreets[key]
+      })()
+
+      const typologies = (function(): Typology[] {
+        const tmp = [] as Typology[]
+        b.typo.forEach(t => {
+          const key = ('k_' + t.id).toLowerCase()
+          if (!kTypologies[key]) {
+            const typo = {
+              uuid: uuid(),
+              id: t.id,
+              nameFr: t.nameFR,
+              nameNl: t.nameNL
+            } as Typology
+            kTypologies[key] = typo
+            migration.insertTypology(typo)
+          }
+          tmp.push(kTypologies[key])
+        })
+        return tmp
+      })()
+
+      const styles = (function(): Style[] {
+        const tmp = [] as Style[]
+        for (let i = b.styleFR ? b.styleFR.length : 0; i--; ) {
+          if (!b.styleFR || !b.styleNL) {
+            continue
+          }
+          const key = ('k_' + (b.styleFR[i] || null) + (b.styleNL[i] || null)).toLowerCase()
+          if (!kStyles[key]) {
+            const style = {
+              uuid: uuid(),
+              nameFr: b.styleFR[i] || null,
+              nameNl: b.styleNL[i] || null
+            } as Style
+            kStyles[key] = style
+            migration.insertStyle(style)
+          }
+          tmp.push(kStyles[key])
+        }
+        return tmp
+      })()
+
+      const intervenants = (function(): Intervenant[] {
+        const tmp = [] as Intervenant[]
+        if (b.intervenants) {
+          b.intervenants.forEach(i => {
+            const key = ('k_' + i.name).toLowerCase()
+            if (!kIntervenants[key]) {
+              const inter = {
+                uuid: uuid(),
+                name: i.name
+              } as Intervenant
+              kIntervenants[key] = inter
+              migration.insertIntervenant(inter)
+            }
+            tmp.push(kIntervenants[key])
+          })
+        }
+        return tmp
+      })()
+
+      const building = {
+        uuid: uuid(),
+        nameFr: b.nameFR,
+        nameNl: b.nameNL,
+        id: b.id,
+        urlFr: b.urlFR,
+        urlNl: b.urlNL,
+        idBatiCMS: b.idBatiCMS,
+        image: b.image,
+        street,
+        number: b.number,
+        typologies,
+        styles,
+        intervenants,
+        gpsLat: b.gpsLat,
+        gpsLon: b.gpsLon
+      } as Building
+
+      migration.insertBuilding(building)
+    })
+
+    if (migration.isDirty) {
+      this.db.exec(migration.save())
+      console.log('comparison completed: changes recorded')
+    } else {
+      console.log('comparison completed: no difference')
+    }
   }
 
+  /**
+   * Flatted db informations
+   */
+  getCurrentData (): FlatBuildings {
+    const ctx = this.db
+    const cities = [] as City[]
+    const streets = [] as Street[]
+    const styles = [] as Style[]
+    const typologies = [] as Typology[]
+    const intervenants = [] as Intervenant[]
+    const buildings = [] as Building[]
+
+    const rows_cities = ctx.prepare('SELECT * FROM cities').all()
+    cities.push(...rows_cities.map((c): City => ({
+      uuid: c.uuid,
+      nameFr: c.name_fr,
+      nameNl: c.name_nl,
+      zipCode: c.zip_code
+    })))
+
+    const rows_streets = ctx.prepare('SELECT * FROM streets').all()
+    streets.push(...rows_streets.map((s): Street => ({
+      uuid: s.uuid,
+      nameFr: s.name_fr,
+      nameNl: s.name_nl,
+      city: cities.find(c => c.uuid === s.city_id) as City
+    })))
+
+    const rows_styles = ctx.prepare('SELECT * FROM styles').all()
+    styles.push(...rows_styles.map((s): Style => ({
+      uuid: s.uuid,
+      nameFr: s.name_fr,
+      nameNl: s.name_nl
+    })))
+
+    const rows_typologies = ctx.prepare('SELECT * FROM typologies').all()
+    typologies.push(...rows_typologies.map((t): Typology => ({
+      uuid: t.uuid,
+      id: t.id,
+      nameFr: t.name_fr,
+      nameNl: t.name_nl
+    })))
+
+    const rows_intervenants = ctx.prepare('SELECT * FROM intervenants').all()
+    intervenants.push(...rows_intervenants.map((i): Intervenant => ({
+      uuid: i.uuid,
+      name: i.name
+    })))
+
+    const rows_building = ctx.prepare('SELECT * FROM buildings').all()
+    buildings.push(...rows_building.map((b): Building => ({
+      uuid: b.uuid,
+      id: b.id,
+      nameFr: b.name_fr,
+      nameNl: b.name_nl,
+      urlFr: b.url_fr,
+      urlNl: b.url_nl,
+      idBatiCMS: b.id_bati_cms,
+      image: b.image,
+      street: streets.find(s => s.uuid === b.street_id) as Street,
+      number: b.number,
+      typologies: [],
+      styles: [],
+      intervenants: [],
+      gpsLon: b.gps_lon,
+      gpsLat: b.gps_lat
+    })))
+
+    ctx.prepare('SELECT * FROM buildings_styles').all().forEach(r => {
+      const b = buildings.find(b => b.uuid === r.building_id)
+      const s = styles.find(s => s.uuid === r.style_id)
+      if (b && s) {
+        if (!b.styles) {
+          b.styles = []
+        }
+        b.styles.push(s)
+      }
+    })
+
+    ctx.prepare('SELECT * FROM buildings_typologies').all().forEach(r => {
+      const b = buildings.find(b => b.uuid === r.building_id)
+      const t = typologies.find(t => t.uuid === r.typology_id)
+      if (b && t) {
+        if (!b.typologies) {
+          b.typologies = []
+        }
+        b.typologies.push(t)
+      }
+    })
+
+    ctx.prepare('SELECT * FROM buildings_intervenants').all().forEach(r => {
+      const b = buildings.find(b => b.uuid === r.building_id)
+      const i = intervenants.find(i => i.uuid === r.intervenant_id)
+      if (b && i) {
+        if (!b.intervenants) {
+          b.intervenants = []
+        }
+        b.intervenants.push(i)
+      }
+    })
+
+    return {
+      cities,
+      streets,
+      styles,
+      typologies,
+      intervenants,
+      buildings
+    }
+  }
+
+  /**
+   * get informations from GISService
+   */
   async getUpdatedData (): Promise<BuildingMulti[]> {
     return (await GISService.getAll()).features.map(f => {
       const props = f.properties
@@ -98,358 +357,8 @@ class GISCache {
       } as BuildingMulti
     })
   }
-
-  repopulate (data: BuildingMulti[]) {
-    this.truncateTables(true)
-    const cities = {} as { [key: string]: City }
-    const streets = {} as { [key: string]: Street }
-    const styles = {} as { [key: string]: Style }
-    const typologies = {} as { [key: string]: Typology }
-    const intervenants = {} as { [key: string]: Intervenant }
-
-    data.forEach(d => {
-      // evaluate unique keys
-      const kCity = '' + d.zipCode
-      const kStreet = '' + d.streetFR + d.streetFR + d.zipCode
-      //  const ktypology = '' + d.typologyID + d.typologyFR + d.typologyNL
-
-      // Insert Entities
-      if (!cities[kCity]) {
-        const city = {
-          uuid: uuidv4(),
-          zipCode: d.zipCode,
-          name_fr: d.cityFR || null,
-          name_nl: d.cityNL || null
-        } as City
-        cities[kCity] = city
-        this.insertCity(city)
-      }
-
-
-      if (!streets[kStreet]) {
-        const street = {
-          uuid: uuidv4(),
-          name_fr: d.streetFR || null,
-          name_nl: d.streetNL || null,
-          city: cities[kCity] || null
-        } as Street
-        streets[kStreet] = street
-        this.insertStreet(street)
-      }
-
-      const building = {
-        uuid: uuidv4(),
-        name_fr: d.nameFR || null,
-        name_nl: d.nameNL || null,
-        id: d.id,
-        url_fr: d.urlFR,
-        url_nl: d.urlNL,
-        idBatiCMS: d.idBatiCMS,
-        image: d.image,
-        street: streets[kStreet] || null,
-        number: d.number,
-        gpsLon: d.gpsLon || null,
-        gpsLat: d.gpsLat || null
-      } as Building
-      this.insertBuilding(building)
-
-      if (d.styleFR && d.styleNL) {
-        const l = Math.max(d.styleFR.length, d.styleNL.length)
-        for (let i = 0; i < l; ++i) {
-          const kStyle = '' + d.styleFR[i] + d.styleNL[i]
-          if (!styles[kStyle]) {
-            const style = {
-              uuid: uuidv4(),
-              name_fr: d.styleFR[i] || null,
-              name_nl: d.styleNL[i] || null
-            } as Style
-            styles[kStyle] = style
-            this.insertStyle(style)
-          }
-          // create relation
-          this.linkStyle(building.uuid, styles[kStyle].uuid)
-        }
-      }
-
-      if (d.typo) {
-        const l = d.typo.length
-        for (let i = 0; i < l; ++i) {
-          const kTypo = '' + d.typo[i].nameFR + d.typo[i].nameNL
-          if (!typologies[kTypo]) {
-            const typo = {
-              uuid: uuidv4(),
-              id: d.typo[i].id || null,
-              name_fr: d.typo[i].nameFR || null,
-              name_nl: d.typo[i].nameNL || null
-            } as Typology
-            typologies[kTypo] = typo
-            this.insertTypology(typo)
-          }
-          // create relation
-          this.linkTypology(building.uuid, typologies[kTypo].uuid)
-        }
-      }
-
-      if (d.intervenants) {
-        for (const inter of d.intervenants) {
-          if (!inter.name) {
-            continue
-          }
-          inter.name = inter.name.trim()
-          if (!intervenants[inter.name]) {
-            const intervenant = {
-              uuid: uuidv4(),
-              name: inter.name
-            } as Intervenant
-            intervenants[inter.name] = intervenant
-            this.insertIntervenant(intervenant)
-          }
-          // create relation
-          this.linkIntervenant(building.uuid, intervenants[inter.name].uuid,
-            inter.startYear, inter.endYear)
-        }
-      }
-    })
-  }
-
-  private initTables() {
-    // Entity Table "cities"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS params (
-        key text primary KEY,
-        value text
-      )
-    `)
-
-    // Entity Table "cities"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS cities (
-        uuid text primary KEY,
-        zip_code text,
-        name_fr text,
-        name_nl text,
-        UNIQUE (zip_code)
-      )
-    `)
-
-    // Entity Table "streets"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS streets (
-        uuid text primary KEY,
-        name_fr text,
-        name_nl text,
-        city_id text,
-        FOREIGN KEY(city_id) REFERENCES cities(uuid)
-      )
-    `)
-  
-    // Entity Table "styles"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS styles (
-        uuid text primary KEY,
-        name_fr text,
-        name_nl text,
-        UNIQUE (name_fr, name_nl)
-      )
-    `)
-
-    // Entity Table "typologies"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS typologies (
-        uuid text primary KEY,
-        id text,
-        name_fr text,
-        name_nl text,
-        UNIQUE (name_fr, name_nl)
-      )
-    `)
-
-    // Entity Table "intervenants"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS intervenants (
-        uuid text primary KEY,
-        name text UNIQUE
-      )
-    `)
-
-    // Entity Table "buildings"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS buildings (
-        uuid text primary KEY,
-        id integer,
-        name_fr text,
-        name_nl text,
-        url_fr text,
-        url_nl text,
-        id_bati_cms text,
-        image text,
-        street_id text NOT NULL,
-        number text,
-        gps_lon real,
-        gps_lat real,
-        FOREIGN KEY(street_id) REFERENCES streets(uuid)
-      )
-    `)
-
-    // Relation Table "buildings_styles"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS buildings_styles (
-        building_id text NOT NULL,
-        style_id text NOT NULL,
-        PRIMARY KEY (building_id, style_id),
-        FOREIGN KEY(building_id) REFERENCES buildings(uuid),
-        FOREIGN KEY(style_id) REFERENCES styles(uuid)
-      )
-    `)
-
-    // Relation Table "buildings_typologies"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS buildings_typologies (
-        building_id text NOT NULL,
-        typology_id text NOT NULL,
-        PRIMARY KEY (building_id, typology_id),
-        FOREIGN KEY(building_id) REFERENCES buildings(uuid),
-        FOREIGN KEY(typology_id) REFERENCES typologies(uuid)
-      )
-    `)
-
-    // Relation Table "buildings_intervenants"
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS buildings_intervenants (
-        building_id text NOT NULL,
-        intervenant_id text NOT NULL,
-        start_year number,
-        end_year number,
-        PRIMARY KEY (building_id, intervenant_id, start_year, end_year),
-        FOREIGN KEY(building_id) REFERENCES buildings(uuid),
-        FOREIGN KEY(intervenant_id) REFERENCES intervenants(uuid)
-      )
-    `)
-  }
-
-  private truncateTables(confirm = false) {
-    if (confirm === true ) {
-      this.db.exec(`
-        DELETE from buildings_styles;
-        DELETE from intervenants;
-        DELETE from buildings;
-        DELETE from streets;
-        DELETE from cities;
-        DELETE from styles;
-        DELETE from typologies;
-        `) // VACCUM
-    }
-  }
-
-  private insertCity(city: City): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO cities (
-        uuid, zip_code, name_fr, name_nl
-      )
-      VALUES(?, ?, ?, ?);
-    `)
-    return stmt.run(city.uuid, city.zipCode, city.name_fr, city.name_nl)
-  }
-
-  private insertStreet(street: Street): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO streets (
-        uuid, name_fr, name_nl, city_id
-      )
-      VALUES(?, ?, ?, ?);
-    `)
-    return stmt.run(
-      street.uuid,
-      street.name_fr,
-      street.name_nl,
-      street.city ? street.city.uuid : null
-    )
-  }
-
-  private insertBuilding (building: Building): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO buildings (
-        uuid, id, name_fr, name_nl, url_fr, url_nl, id_bati_cms,
-        image, street_id, "number", gps_lon, gps_lat
-      )
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    `)
-    return stmt.run(
-      building.uuid,
-      building.id,
-      building.name_fr,
-      building.name_nl,
-      building.url_fr,
-      building.url_nl,
-      building.idBatiCMS,
-      building.image,
-      building.street ? building.street.uuid : null, // building?.street.uuid
-      building.number,
-      building.gpsLon,
-      building.gpsLat
-    )
-  }
-
-  private insertStyle (style: Style): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO styles (
-        uuid, name_fr, name_nl
-      )
-      VALUES(?, ?, ?);
-    `)
-    return stmt.run(style.uuid, style.name_fr, style.name_nl)
-  }
-
-  private insertTypology (typo: Typology): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO typologies (
-        uuid, id, name_fr, name_nl
-      )
-      VALUES(?, ?, ?, ?);
-    `)
-    return stmt.run(typo.uuid, typo.id, typo.name_fr, typo.name_nl)
-  }
-
-  private insertIntervenant (intervenant: Intervenant): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO intervenants (
-        uuid, name
-      )
-      VALUES(?, ?);    
-    `)
-    return stmt.run(intervenant.uuid, intervenant.name)
-  }
-
-  private linkStyle (building_id: string, style_id: string): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO buildings_styles (
-        building_id, style_id
-      )
-      VALUES(?, ?);
-    `)
-    return stmt.run(building_id, style_id)
-  }
-
-  private linkTypology (building_id: string, typo_id: string): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO buildings_typologies (
-        building_id, typology_id
-      )
-      VALUES(?, ?);
-    `)
-    return stmt.run(building_id, typo_id)
-  }
-
-  private linkIntervenant (building_id: string, intervenant_id: string, start?: number, end?: number): RunResult {
-    const stmt = this.db.prepare(`
-      INSERT INTO buildings_intervenants (
-        building_id, intervenant_id, start_year, end_year
-      )
-      VALUES(?, ?, ?, ?);
-    `)
-    return stmt.run(building_id, intervenant_id, start, end)
-  }
 }
 
+// lazy singleton
 const _default = new GISCache()
 export default _default
