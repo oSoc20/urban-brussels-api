@@ -27,7 +27,7 @@
     "typescript": "^3.9.6"
   },
   "dependencies": {
-    "@types/express": "^4.17.7",
+    "@types/express": "^4.17.9",
     "@types/geojson": "^7946.0.7",
     "axios": "^0.19.2",
     "better-sqlite3": "^7.1.0",
